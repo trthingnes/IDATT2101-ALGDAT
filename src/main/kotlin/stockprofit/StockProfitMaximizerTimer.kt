@@ -1,4 +1,5 @@
-import stockprofit.StockProfitMaximizer
+package stockprofit
+
 import kotlin.system.measureTimeMillis
 
 fun main() {
