@@ -9,16 +9,23 @@ fun main() {
 }
 
 class ArraySorter {
-    fun quicksort(a: Array<Int>, l: Int, r: Int) {
+    /**
+     * Sorts the given array using the quicksort algorithm.
+     * @param a Array to sort.
+     * @param l Index to sort from.
+     * @param r Index to sort to.
+     * @param pi (Optional) Index of pivot element. Uses median3sort if not present.
+     */
+    fun quicksort(a: Array<Int>, l: Int, r: Int, pi: Int? = null) {
         if(r - l > 2) {
-            val pivot = split(a, l, r)
+            val pivot = split(a, l, r, pi)
             quicksort(a, l, pivot - 1)
             quicksort(a, pivot + 1, r)
         } else median3sort(a, l, r)
     }
 
-    private fun split(a: Array<Int>, l: Int, r: Int) : Int {
-        val m = median3sort(a, l, r)
+    private fun split(a: Array<Int>, l: Int, r: Int, pi : Int?) : Int {
+        val m = pi ?: median3sort(a, l, r) // Uses median3sort if nothing else is defined.
         val pivot = a[m]
 
         var il = l
