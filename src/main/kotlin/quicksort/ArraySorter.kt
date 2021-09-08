@@ -1,31 +1,27 @@
 package quicksort
 
-fun main() {
-    val a = arrayOf(10, 5, 4, 2, 12, 200)
-    ArraySorter().quicksort(a, 0, 5)
-    for (num in a) {
-        print("$num, ")
-    }
-}
-
 class ArraySorter {
     /**
      * Sorts the given array using the quicksort algorithm.
      * @param a Array to sort.
      * @param l Index to sort from.
      * @param r Index to sort to.
-     * @param pi (Optional) Index of pivot element. Uses median3sort if not present.
      */
-    fun quicksort(a: Array<Int>, l: Int, r: Int, pi: Int? = null) {
+    fun quicksort(a: Array<Int>, l: Int, r: Int, improved: Boolean = false) {
+        // * Run improved check if this option is enabled.
+        if(improved && l > 0 && r < a.lastIndex && a[l - 1] == a[r + 1]) return
+
+        // * Run normal quicksort if improved check is not used.
         if(r - l > 2) {
-            val pivot = split(a, l, r, pi)
-            quicksort(a, l, pivot - 1)
-            quicksort(a, pivot + 1, r)
-        } else median3sort(a, l, r)
+            val pivot = split(a, l, r)
+            quicksort(a, l, pivot - 1, improved)
+            quicksort(a, pivot + 1, r, improved)
+        }
+        else median3sort(a, l, r)
     }
 
-    private fun split(a: Array<Int>, l: Int, r: Int, pi : Int?) : Int {
-        val m = pi ?: median3sort(a, l, r) // Uses median3sort if nothing else is defined.
+    private fun split(a: Array<Int>, l: Int, r: Int) : Int {
+        val m = median3sort(a, l, r)
         val pivot = a[m]
 
         var il = l
@@ -33,6 +29,7 @@ class ArraySorter {
 
         swap(a, m, r - 1)
 
+        // * Move numbers around until all numbers are correctly placed.
         while (true) {
             while(a[++il] < pivot);
             while(a[--ir] > pivot);
@@ -45,6 +42,9 @@ class ArraySorter {
         return il
     }
 
+    /**
+     * Compare first, last and middle values to see which one would be the best median.
+     */
     private fun median3sort(a: Array<Int>, l: Int, r: Int) : Int {
         val m: Int = (l + r) / 2
 
