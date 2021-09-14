@@ -6,28 +6,28 @@ import java.util.*
 
 
 fun main() {
-    val sfv = SourceFileValidator()
+    val sv = SourceValidator()
 
     // * val code = getStringFromFile("./Dummy.kt")
     // * sfv.validate(code)
 
     print("1: ")
-    sfv.validate("{[](())")
+    sv.validate("{[](())")
 
     print("2: ")
-    sfv.validate("{([()])}]")
+    sv.validate("{([()])}]")
 
     print("3: ")
-    sfv.validate("(}")
+    sv.validate("(}")
 
     print("4: ")
-    sfv.validate(" [ { ] }")
+    sv.validate(" [ { ] }")
 
     print("5: ")
-    sfv.validate("(){{}[[]][]}{()}")
+    sv.validate("(){{}[[]][]}{()}")
 
     print("6: ")
-    sfv.validate("int main(){ println(\"ok\");}")
+    sv.validate("int main(){ println(\"ok\");}")
 }
 
 fun getStringFromFile(path : String) : String {
@@ -36,7 +36,7 @@ fun getStringFromFile(path : String) : String {
     return sb.toString()
 }
 
-class SourceFileValidator {
+class SourceValidator {
     private val opening = arrayOf('(', '{', '[')
     private val closing = arrayOf(')', '}', ']')
     private fun matching(opening : Char, closing : Char) : Boolean = (this.opening.indexOf(opening) == this.closing.indexOf(closing))
