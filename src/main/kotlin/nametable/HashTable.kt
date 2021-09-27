@@ -1,4 +1,4 @@
-package hashtables
+package nametable
 
 import java.io.File
 

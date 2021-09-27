@@ -1,4 +1,4 @@
-package quicksort
+package arraysort
 
 import kotlin.system.measureTimeMillis
 

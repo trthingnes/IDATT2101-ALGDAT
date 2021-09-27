@@ -1,4 +1,4 @@
-package recursion
+package power
 
 import kotlin.math.pow
 import kotlin.system.measureNanoTime
