@@ -4,7 +4,7 @@ import java.io.File
 
 fun main() {
     val hs = HashTable(149)
-    val lines = File("./src/main/kotlin/hashtables/names.txt").readLines()
+    val lines = File("./src/main/kotlin/nametable/names.txt").readLines()
 
     println("Found ${lines.size} names to add.\n")
 
@@ -16,6 +16,8 @@ fun main() {
     println("Found me in table: ${hs.find("Tobias Rødahl Thingnes") != null}")
     println("Found Ola Nordmann in table: ${hs.find("Ola Nordmann") != null}")
 }
+
+class HashNode<T>(var value : T, var next : HashNode<T>? = null)
 
 class HashTable(size : Int) {
     private val array = Array<HashNode<String>?>(size) { null }

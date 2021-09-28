@@ -2,9 +2,11 @@ package hashtable
 
 import kotlin.math.round
 import kotlin.math.sqrt
+import kotlin.reflect.typeOf
+import kotlin.system.measureTimeMillis
 
-fun main() {
-    val m = 127 // ! Must be prime for quadratic to work properly.
+fun mains() {
+    val m = 15_485_863 // ! Must be prime for quadratic to work properly.
     val alpha = 0.8 // * Fill rate
 
     val array = getUniqueRandomArray(round(m*alpha).toInt())
@@ -14,70 +16,69 @@ fun main() {
 
     array.forEach { lin.add(it) }
     println("Linear: Tried to add ${array.size}/$m elements. Filled ${lin.filled} after ${lin.collisions} collisions.")
-    println("Got number out of table: ${lin.find(array.last())}\n")
 
     array.forEach { qua.add(it) }
     println("Quadratic: Tried to add ${array.size}/$m elements. Filled ${qua.filled} after ${qua.collisions} collisions.")
-    println("Got number out of table: ${qua.find(array.last())}\n")
 
     array.forEach { dou.add(it) }
     println("Double: Tried to add ${array.size}/$m elements. Filled ${dou.filled} after ${dou.collisions} collisions.")
-    println("Got number out of table: ${dou.find(array.last())}")
+}
+
+fun main() {
+    val m = 15_485_863 // * Primtall over 10 millioner
+    val alpha = 0.99
+
+    val array = getUniqueRandomArray(round(m*alpha).toInt())
+
+    val linTable = LinearHashTable(m)
+    val linRuntime = measureTimeMillis {
+        array.forEach { linTable.add(it) }
+    }
+    println("Linear: Filled $alpha of $m elements with a runtime of $linRuntime ms.")
+
+    val quaTable = QuadraticHashTable(m)
+    val quaRuntime = measureTimeMillis {
+        array.forEach { quaTable.add(it) }
+    }
+    println("Quadratic: Filled $alpha of $m elements with a runtime of $quaRuntime ms.")
+
+    val douTable = DoubleHashTable(m)
+    val douRuntime = measureTimeMillis {
+        array.forEach { douTable.add(it) }
+    }
+    println("Double: Filled $alpha of $m elements with a runtime of $douRuntime ms.")
 }
 
 fun getUniqueRandomArray(m : Int) : Array<Int> {
     val array = Array(m) { 0 }
 
-    array[0] = (1..500).random()
+    array[0] = (1..10).random()
     for (i in (1 until m)) {
-        array[i] = array[i-1] + (1..500).random()
+        array[i] = array[i-1] + (1..10).random()
     }
     array.shuffle()
 
     return array
 }
 
-abstract class HashTable(size : Int) {
-    private val array = Array<Int?>(size) { null }
-    private val a = (sqrt(5.0) - 1) / 2
+abstract class HashTable(val size : Int) {
+    internal var array = Array<Int?>(size) { null }
+    internal var filled = 0
+    internal var collisions = 0
 
-    var filled = 0
-    var collisions = 0
+    private val a = (sqrt(5.0) - 1) / 2
 
     internal fun multiHash(n : Int) : Int {
         return ( array.size * ( n*a - (n*a).toInt() ) ).toInt()
     }
 
-    internal abstract fun probe(n: Int, i : Int) : Int
+    internal abstract fun add(n : Int) : Boolean
 
-    fun add(n : Int) : Boolean {
-        for (i in (0..array.lastIndex)) {
-            val probe = probe(n, i)
+    internal abstract fun find(n : Int) : Boolean
 
-            if (array[probe] == null) {
-                array[probe] = n
-                this.filled++
-                return true
-            }
-
-            collisions++
-        }
-
-        return false
-    }
-
-    fun find(n : Int) : Boolean {
-        for (i in (0..array.lastIndex)) {
-            val probe = probe(n, i)
-
-            if (array[probe] == n) {
-                return true
-            }
-            else if (array[probe] == null) {
-                return false
-            }
-        }
-
-        return false
+    fun clear() {
+        array = Array(size) { null }
+        filled = 0
+        collisions = 0
     }
 }
