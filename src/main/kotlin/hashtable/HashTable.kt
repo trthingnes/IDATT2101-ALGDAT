@@ -1,84 +1,127 @@
 package hashtable
 
-import kotlin.math.round
-import kotlin.math.sqrt
-import kotlin.reflect.typeOf
-import kotlin.system.measureTimeMillis
+import kotlin.math.abs
 
-fun mains() {
-    val m = 15_485_863 // ! Must be prime for quadratic to work properly.
-    val alpha = 0.8 // * Fill rate
+class LinearHashTable(maxSize : Int) : AbstractHashTable(maxSize) {
+    override fun add(n : Int) : Boolean {
+        val hash = multiHash(n)
 
-    val array = getUniqueRandomArray(round(m*alpha).toInt())
-    val lin = LinearHashTable(m)
-    val qua = QuadraticHashTable(m)
-    val dou = DoubleHashTable(m)
+        for (i in array.indices) {
+            val probe = (hash + i) % size
 
-    array.forEach { lin.add(it) }
-    println("Linear: Tried to add ${array.size}/$m elements. Filled ${lin.filled} after ${lin.collisions} collisions.")
+            if (array[probe] == null) {
+                array[probe] = n
+                filled++
+                return true
+            }
 
-    array.forEach { qua.add(it) }
-    println("Quadratic: Tried to add ${array.size}/$m elements. Filled ${qua.filled} after ${qua.collisions} collisions.")
+            collisions++
+        }
 
-    array.forEach { dou.add(it) }
-    println("Double: Tried to add ${array.size}/$m elements. Filled ${dou.filled} after ${dou.collisions} collisions.")
+        return false
+    }
+
+    override fun find(n : Int) : Boolean {
+        val hash = multiHash(n)
+
+        for (i in array.indices) {
+            val probe = (hash + i) % size
+
+            if (array[probe] == n) {
+                return true
+            }
+            else if (array[probe] == null) {
+                return false
+            }
+        }
+
+        return false
+    }
 }
 
-fun main() {
-    val m = 15_485_863 // * Primtall over 10 millioner
-    val alpha = 0.99
+class QuadraticHashTable(maxSize : Int) : AbstractHashTable(maxSize) {
+    private val k1 = 3
+    private val k2 = 5
 
-    val array = getUniqueRandomArray(round(m*alpha).toInt())
+    override fun add(n : Int) : Boolean {
+        val hash = multiHash(n)
 
-    val linTable = LinearHashTable(m)
-    val linRuntime = measureTimeMillis {
-        array.forEach { linTable.add(it) }
+        for (i in array.indices) {
+            val probe = (hash + ((k1 + k2 * i) * i)) % size
+
+            if (array[probe] == null) {
+                array[probe] = n
+                filled++
+                return true
+            }
+
+            collisions++
+        }
+
+        return false
     }
-    println("Linear: Filled $alpha of $m elements with a runtime of $linRuntime ms.")
 
-    val quaTable = QuadraticHashTable(m)
-    val quaRuntime = measureTimeMillis {
-        array.forEach { quaTable.add(it) }
-    }
-    println("Quadratic: Filled $alpha of $m elements with a runtime of $quaRuntime ms.")
+    override fun find(n : Int) : Boolean {
+        val hash = multiHash(n)
 
-    val douTable = DoubleHashTable(m)
-    val douRuntime = measureTimeMillis {
-        array.forEach { douTable.add(it) }
+        for (i in array.indices) {
+            val probe = (hash + ((k1 + k2 * i) * i)) % size
+
+            if (array[probe] == n) {
+                return true
+            }
+            else if (array[probe] == null) {
+                return false
+            }
+        }
+
+        return false
     }
-    println("Double: Filled $alpha of $m elements with a runtime of $douRuntime ms.")
 }
 
-fun getUniqueRandomArray(m : Int) : Array<Int> {
-    val array = Array(m) { 0 }
+class DoubleHashTable(maxSize : Int) : AbstractHashTable(maxSize) {
+    override fun add(n : Int) : Boolean {
+        val hash1 = h1(n)
+        val hash2 = h2(n)
 
-    array[0] = (1..10).random()
-    for (i in (1 until m)) {
-        array[i] = array[i-1] + (1..10).random()
-    }
-    array.shuffle()
+        for (i in array.indices) {
+            val probe = abs((hash1 + i*hash2) % size)
 
-    return array
-}
+            if (array[probe] == null) {
+                array[probe] = n
+                this.filled++
+                return true
+            }
 
-abstract class HashTable(val size : Int) {
-    internal var array = Array<Int?>(size) { null }
-    internal var filled = 0
-    internal var collisions = 0
+            collisions++
+        }
 
-    private val a = (sqrt(5.0) - 1) / 2
-
-    internal fun multiHash(n : Int) : Int {
-        return ( array.size * ( n*a - (n*a).toInt() ) ).toInt()
+        return false
     }
 
-    internal abstract fun add(n : Int) : Boolean
+    override fun find(n : Int) : Boolean {
+        val hash1 = h1(n)
+        val hash2 = h2(n)
 
-    internal abstract fun find(n : Int) : Boolean
+        for (i in array.indices) {
+            val probe = (hash1 + i*hash2) % size
 
-    fun clear() {
-        array = Array(size) { null }
-        filled = 0
-        collisions = 0
+            if (array[probe] == n) {
+                return true
+            }
+            else if (array[probe] == null) {
+                return false
+            }
+        }
+
+        return false
+    }
+
+    private fun h1(n : Int) : Int {
+        return n % size
+    }
+
+    private fun h2(n : Int) : Int {
+        return (n % (size - 1)) + 1
     }
 }
