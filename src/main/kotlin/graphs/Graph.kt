@@ -1,11 +1,17 @@
 package graphs
 
 fun main() {
-    val g = GraphReader().read("./src/main/kotlin/graphs/L7g1.txt")
-    println(g.dfs(2))
+    val g = GraphReader().read("./src/main/kotlin/graphs/L7g5.txt")
+    val nodes = g.topo()
+
+    val sb = StringBuilder()
+    for (node in nodes) {
+        sb.appendLine("Node ${node.number} -> PREV=${node.previous?.number ?: node.number} DIST=${node.distance}")
+    }
+    println(sb.toString())
 }
 
-class Graph(val n : Int, val e : Int, neighbours : Array<Array<Int>>) {
+class Graph(val n : Int, neighbours : Array<Array<Int>>) {
     private val nodes = Array(n) { Node(it) }
 
     init {
@@ -15,18 +21,21 @@ class Graph(val n : Int, val e : Int, neighbours : Array<Array<Int>>) {
         }
     }
 
-    fun bfs(start : Int) : String {
+    fun bfs(start : Int) : Array<Node> {
         val queue : ArrayList<Node> = arrayListOf(nodes[start])
         lateinit var current : Node
 
-        // *  Start node has distance 0.
+        // * Reset potential previous data.
+        reset()
+
+        // * Start node has distance 0.
         nodes[start].distance = 0
 
         while (queue.isNotEmpty()) {
             current = queue.removeFirst()
 
             // * Check and connect all neighbours
-            current.neighbours.forEach() {
+            current.neighbours.forEach {
                 if (nodes[it].distance == Int.MAX_VALUE) {
                     nodes[it].distance = current.distance + 1
                     nodes[it].previous = current
@@ -35,29 +44,37 @@ class Graph(val n : Int, val e : Int, neighbours : Array<Array<Int>>) {
             }
         }
 
-        val sb = StringBuilder()
-        for (node in nodes) {
-            sb.appendLine("Node ${node.number} -> PREV=${node.previous?.number ?: node.number} DIST=${node.distance}")
-        }
-
-        reset()
-
-        return sb.toString()
+        return nodes
     }
 
-    fun dfs(start : Int) : String {
-        nodes[start].distance = 0
-
-        dfs(start, arrayListOf(nodes[start]))
-
-        val sb = StringBuilder()
-        for (node in nodes) {
-            sb.appendLine("Node ${node.number} -> PREV=${node.previous?.number ?: node.number} DIST=${node.distance}")
-        }
-
+    fun dfs(start : Int) : Array<Node> {
+        // * Reset potential previous data.
         reset()
 
-        return sb.toString()
+        // * Start node has distance 0.
+        nodes[start].distance = 0
+
+        // * Run recursive dfs.
+        dfs(start, arrayListOf(nodes[start]))
+
+        return nodes
+    }
+
+    fun topo() : ArrayList<Node> {
+        val visited = arrayListOf<Node>()
+
+        while(nodes.any { it !in visited }) {
+            val current = nodes.first { it !in visited }
+            visited.add(current)
+            dfs(current.number, visited)
+        }
+
+        val printOrder = arrayListOf<Node>()
+        for(i in nodes.indices) {
+            printOrder.add(nodes.firstOrNull { it !in printOrder && it.previous == null } ?: nodes.first { it !in printOrder && it.previous in printOrder })
+        }
+
+        return printOrder
     }
 
     private fun dfs(start : Int, visited : ArrayList<Node>) {

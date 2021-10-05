@@ -9,7 +9,6 @@ class GraphReader {
         // * Gets number of nodes and edges from file header.
         val sizes = lines.next().split(" ")
         val n = sizes.first().toInt()
-        val e = sizes.last().toInt()
 
         // * Makes an array of edges. Example: [[1, 3], [1, 5], [3, 5]].
         val edges = Array(sizes.last().toInt()) {
@@ -17,6 +16,6 @@ class GraphReader {
             Array(2) { nodes[it].toInt() }
         }
 
-        return Graph(n, e, edges)
+        return Graph(n, edges)
     }
 }
