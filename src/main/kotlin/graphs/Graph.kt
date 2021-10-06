@@ -1,31 +1,28 @@
 package graphs
 
 fun main() {
-    val g = GraphReader().read("./src/main/kotlin/graphs/L7g5.txt")
-    val nodes = g.topo()
+    val b = GraphReader().read("./L7g2.txt")
+    val t = GraphReader().read("./L7g5.txt")
 
-    val sb = StringBuilder()
-    for (node in nodes) {
-        sb.appendLine("Node ${node.number} -> PREV=${node.previous?.number ?: node.number} DIST=${node.distance}")
-    }
-    println(sb.toString())
+    b.bfs(2).forEach { println("#${it.number} -> Prev=${it.previous?.number ?: it.number} Dist=${it.distance}.") }
+    println("\n")
+    t.toposort().forEach { print("${it.number} ") }
 }
 
-class Graph(val n : Int, neighbours : Array<Array<Int>>) {
+class Graph(n : Int, edges : Array<Array<Int>>) {
     private val nodes = Array(n) { Node(it) }
 
     init {
         // * Add all neighbour connections.
-        for (neighbour in neighbours) {
-            nodes[neighbour.first()].neighbours.add(neighbour.last())
+        for (edge in edges) {
+            nodes[edge.first()].neighbours.add(nodes[edge.last()])
         }
     }
 
-    fun bfs(start : Int) : Array<Node> {
+    fun bfs(start : Int, debug : Boolean = false) : Array<Node> {
         val queue : ArrayList<Node> = arrayListOf(nodes[start])
         lateinit var current : Node
 
-        // * Reset potential previous data.
         reset()
 
         // * Start node has distance 0.
@@ -33,13 +30,19 @@ class Graph(val n : Int, neighbours : Array<Array<Int>>) {
 
         while (queue.isNotEmpty()) {
             current = queue.removeFirst()
+            if (debug) println("Got #${current.number} from queue.")
 
-            // * Check and connect all neighbours
+            // * Check and connect all neighbours.
             current.neighbours.forEach {
-                if (nodes[it].distance == Int.MAX_VALUE) {
-                    nodes[it].distance = current.distance + 1
-                    nodes[it].previous = current
-                    queue.add(nodes[it])
+                if (debug) println("Checking #${it.number}.")
+
+                // * If a neighbour is not visited yet.
+                if (it.distance == Int.MAX_VALUE) {
+                    if (debug) println("#${it.number} not visited yet.")
+
+                    it.distance = current.distance + 1
+                    it.previous = current
+                    queue.add(it)
                 }
             }
         }
@@ -47,54 +50,50 @@ class Graph(val n : Int, neighbours : Array<Array<Int>>) {
         return nodes
     }
 
-    fun dfs(start : Int) : Array<Node> {
-        // * Reset potential previous data.
+    fun toposort(debug : Boolean = false) : Array<Node> {
         reset()
 
-        // * Start node has distance 0.
-        nodes[start].distance = 0
+        val result = arrayListOf<Node>()
 
-        // * Run recursive dfs.
-        dfs(start, arrayListOf(nodes[start]))
+        while(result.size < nodes.size) {
+            val start = nodes.first { it !in result }
 
-        return nodes
-    }
-
-    fun topo() : ArrayList<Node> {
-        val visited = arrayListOf<Node>()
-
-        while(nodes.any { it !in visited }) {
-            val current = nodes.first { it !in visited }
-            visited.add(current)
-            dfs(current.number, visited)
+            result.addAll(toposort(start, debug))
         }
 
-        val printOrder = arrayListOf<Node>()
-        for(i in nodes.indices) {
-            printOrder.add(nodes.firstOrNull { it !in printOrder && it.previous == null } ?: nodes.first { it !in printOrder && it.previous in printOrder })
-        }
+        // * Reverse list because everything is added to end, not front.
+        result.reverse()
 
-        return printOrder
+        return result.toTypedArray()
     }
 
-    private fun dfs(start : Int, visited : ArrayList<Node>) {
-        for (i in nodes[start].neighbours) {
-            val node = nodes[i]
+    private fun toposort(start : Node, debug : Boolean) : ArrayList<Node> {
+        val result = arrayListOf<Node>()
 
-            if (node !in visited) {
-                visited.add(node)
-                node.previous = nodes[start]
-                node.distance = nodes[start].distance + 1
+        if (debug) println("Checking #${start.number}.")
 
-                dfs(node.number, visited)
-            }
+        for (neighbour in start.neighbours) {
 
-            if (visited.size == n) {
-                break
+            // * If neighbour is not visited yet.
+            if (neighbour.distance == Int.MAX_VALUE) {
+                if (debug) println("#${neighbour.number} has not been visited.")
+
+                neighbour.distance = 0
+
+                result.addAll(toposort(neighbour, debug))
+
+                if (debug) println("Leaving #${neighbour.number}")
             }
         }
+
+        result.add(start)
+
+        return result
     }
 
+    /**
+     * Removes earlier results stored in node elements.
+     */
     private fun reset() {
         for (node in nodes) {
             node.previous = null
@@ -105,7 +104,7 @@ class Graph(val n : Int, neighbours : Array<Array<Int>>) {
 
 class Node(
     val number : Int,
-    val neighbours : ArrayList<Int> = arrayListOf(),
+    val neighbours : ArrayList<Node> = arrayListOf(),
     var previous : Node? = null,
-    var distance : Int = Int.MAX_VALUE
+    var distance : Int = Int.MAX_VALUE,
 )
