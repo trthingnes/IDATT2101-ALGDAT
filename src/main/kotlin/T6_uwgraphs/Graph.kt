@@ -1,8 +1,8 @@
 package T6_uwgraphs
 
 fun main() {
-    val b = GraphReader().read("./L7g2.txt")
-    val t = GraphReader().read("./L7g5.txt")
+    val b = GraphReader().read("src/main/kotlin/T6_uwgraphs/L7g1.txt")
+    val t = GraphReader().read("src/main/kotlin/T6_uwgraphs/L7g5.txt")
 
     b.bfs(2).forEach { println("#${it.number} -> Prev=${it.previous?.number ?: it.number} Dist=${it.distance}.") }
     println("\n")

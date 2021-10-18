@@ -3,7 +3,7 @@ package T7_wgraphs
 import kotlin.math.abs
 
 fun main() {
-    val g = GraphReader().read("./flytgraf1.txt")
+    val g = GraphReader().read("src/main/kotlin/T7_wgraphs/flytgraf1.txt")
     val maxFlow = g.edmondskarp(0, 7)
     println("Got max flow of $maxFlow")
 }
