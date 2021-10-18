@@ -12,37 +12,52 @@ class Graph(n: Int, edges: Array<Array<Int>>) {
     private val nodes = Array(n) { Node(it) }
 
     init {
-        // * Fill the edges from file, and insert reverse edges with capacity = 0.
+        // * Fill the edges from file.
         for (row in edges) {
-            val origin = nodes[row[0]]
-            val target = nodes[row[1]]
-
-            addEdgeSet(origin, target, row[2])
+            nodes[row[0]].edges.add(Edge(nodes[row[1]], row[2]))
         }
 
-        // * Fill remaining graph with pairs of edges with capacity = 0.
         for (origin in nodes) {
-            val targetedNodes = origin.edges.map { it.target }
+            for (edge in origin.edges) {
+                // * If edge reverse already exists, this is probably a reverse edge, so skip it.
+                if (edge.reverse != null) continue
 
-            for (target in nodes.filter { it !in targetedNodes }) {
-                addEdgeSet(origin, target)
+                // * Get reverse edge if it exists. If not create one.
+                val rEdge = edge.target.edges.firstOrNull { it.target == origin } ?: Edge(origin, 0)
+
+                // * Set reverse references.
+                edge.reverse = rEdge
+                rEdge.reverse = edge
+
+                // * If reverse edge was created now, add it to the edge list.
+                if (rEdge !in edge.target.edges) {
+                    edge.target.edges.add(rEdge)
+                }
             }
         }
     }
 
     /**
-     * Adds one [Edge] to each node provided.
-     * The origin edge receives the given flow while the target edge receives 0 flow.
+     * Runs an Edmonds-Karp flow algorithm on the [Graph].
      */
-    private fun addEdgeSet(origin: Node, target: Node, flow: Int = 0) {
-        val edge = Edge(target, flow)
-        val edgeReverse = Edge(origin, 0)
+    fun edmondskarp(source: Int, sink: Int): Int {
+        var path = bfs(source, sink)
+        while (path.isNotEmpty()) {
+            val min = path.minOf { it.unusedFlow }
+            print("(+$min): Used path #$source")
+            path.forEach { print(" ->-(${it.usedFlow}/${it.maxFlow})->- #${it.target.number}") }
+            println()
 
-        edge.reverse = edgeReverse
-        edgeReverse.reverse = edge
+            for (edge in path) {
+                edge.usedFlow += min
+                edge.reverse!!.usedFlow -= min
+            }
 
-        origin.edges.add(edge)
-        target.edges.add(edgeReverse)
+            path = bfs(source, sink)
+        }
+
+        // * Max flow is the sum of the flow to the drain.
+        return abs(nodes[sink].edges.sumOf { it.usedFlow })
     }
 
     /**
@@ -89,29 +104,6 @@ class Graph(n: Int, edges: Array<Array<Int>>) {
             current = current.previous!!
         }
         return path.reversed()
-    }
-
-    /**
-     * Runs an Edmonds-Karp flow algorithm on the [Graph].
-     */
-    fun edmondskarp(source: Int, sink: Int): Int {
-        var path = bfs(source, sink)
-        while (path.isNotEmpty()) {
-            val min = path.minOf { it.unusedFlow }
-            print("(+$min): Used path #$source")
-            path.forEach { print(" ->-(${it.usedFlow}/${it.maxFlow})->- #${it.target.number}") }
-            println()
-
-            for (edge in path) {
-                edge.usedFlow += min
-                edge.reverse!!.usedFlow -= min
-            }
-
-            path = bfs(source, sink)
-        }
-
-        // * Max flow is the sum of the flow to the drain.
-        return abs(nodes[sink].edges.sumOf { it.usedFlow })
     }
 }
 
