@@ -1,4 +1,4 @@
-package graphs
+package T6_uwgraphs
 
 fun main() {
     val b = GraphReader().read("./L7g2.txt")

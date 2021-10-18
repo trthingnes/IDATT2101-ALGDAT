@@ -1,4 +1,4 @@
-package codevalidation
+package T4_structures
 
 class Dummy {
     fun dummy(boolean: Boolean) {

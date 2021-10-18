@@ -1,4 +1,4 @@
-package wgraphs
+package T7_wgraphs
 
 import java.io.File
 import java.util.*

@@ -1,4 +1,4 @@
-package codevalidation
+package T4_structures
 
 import java.io.File
 import java.lang.IllegalStateException

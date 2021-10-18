@@ -1,4 +1,4 @@
-package wgraphs
+package T7_wgraphs
 
 import kotlin.math.abs
 

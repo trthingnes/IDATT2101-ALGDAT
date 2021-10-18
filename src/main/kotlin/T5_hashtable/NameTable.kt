@@ -1,4 +1,4 @@
-package nametable
+package T5_hashtable
 
 import java.io.File
 

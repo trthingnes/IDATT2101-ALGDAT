@@ -1,4 +1,4 @@
-package hashtable
+package T5_hashtable
 
 import kotlin.math.round
 import kotlin.math.sqrt

@@ -1,4 +1,4 @@
-package stockprofit
+package T1_stockprofit
 
 import kotlin.system.measureTimeMillis
 

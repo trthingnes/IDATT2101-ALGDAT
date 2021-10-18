@@ -1,4 +1,4 @@
-package stockprofit
+package T1_stockprofit
 
 fun main() {
     val result = StockProfitMaximizer().maximize(listOf(-1, 3, -9, 2, 2, -1, 2, -1, -5))

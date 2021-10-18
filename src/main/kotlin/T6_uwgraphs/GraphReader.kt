@@ -1,4 +1,4 @@
-package graphs
+package T6_uwgraphs
 
 import java.io.File
 import java.util.*

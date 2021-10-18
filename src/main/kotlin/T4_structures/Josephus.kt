@@ -1,4 +1,4 @@
-package josephus
+package T4_structures
 
 fun main() {
     val n = 10

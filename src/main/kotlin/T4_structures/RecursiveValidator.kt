@@ -1,4 +1,4 @@
-package codevalidation
+package T4_structures
 
 class RecursiveValidator {
     private val opening = arrayOf('(', '{', '[')
