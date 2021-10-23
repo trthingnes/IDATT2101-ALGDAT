@@ -8,20 +8,8 @@ import kotlin.NoSuchElementException
 fun main() {
     val h = Huffman()
 
-    h.compress(File("./CV.pdf"), File("./CV.huff.pdf"))
-    h.decompress(File("./CV.huff.pdf"), File("./CV.decoded.pdf"))
-
-    FileInputStream(File("./CV.pdf")).use { inp ->
-        FileInputStream(File("./CV.decoded.pdf")).use { out ->
-            var counter = 0
-            while(inp.available() > 0 && out.available() > 0) {
-                val inpRead = inp.read()
-                val outRead = out.read()
-                if(inpRead != outRead) println("Byte $counter: $inpRead != $outRead")
-                counter++
-            }
-        }
-    }
+    h.compress(File("./diverse.txt"), File("./diverse.huff.txt"))
+    h.decompress(File("./diverse.huff.txt"), File("./diverse.decoded.txt"))
 }
 
 class Huffman {
@@ -64,13 +52,13 @@ class Huffman {
 
         DataOutputStream(FileOutputStream(output)).use {
             // Write the frequencies to the output list (the tree is derived from this).
-            frequencies.forEach { f -> it.writeInt(f) }
+            frequencies.forEach { f -> it.writeShort(f) }
 
             // Write the number corresponding to the number of zeros used as padding.
-            it.writeInt(padding)
+            it.writeByte(padding)
 
             // Write all the encoded bytes to the list.
-            outputBytes.forEach { b -> it.write(b) }
+            outputBytes.forEach { b -> it.writeByte(b) }
         }
     }
 
@@ -86,11 +74,11 @@ class Huffman {
         DataInputStream(FileInputStream(input)).use {
             // Read all frequencies from file.
             for(i in frequencies.indices) {
-                frequencies[i] = it.readInt()
+                frequencies[i] = it.readShort().toInt()
             }
 
             // Read padding used for last byte from file.
-            padding = it.readInt()
+            padding = it.readByte().toInt()
 
             // Read the rest of the file as bytes.
             while(it.available() > 0) {
