@@ -1,11 +1,5 @@
 package T8_compression
 
-class Node(var byte: Int?, var frequency: Int) {
-    constructor(a: Node, b: Node) : this(null, a.frequency + b.frequency) {
-        left = a
-        right = b
-    }
-
-    var left: Node? = null
-    var right: Node? = null
+class Node(var value: Int?, var frequency: Int, var left: Node? = null, var right: Node? = null) {
+    constructor(a: Node, b: Node) : this(null, a.frequency + b.frequency, a, b)
 }

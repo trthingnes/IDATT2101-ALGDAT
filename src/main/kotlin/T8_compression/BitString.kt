@@ -4,7 +4,7 @@ class BitString(var length: Int = 0, var bits: Long = 0) {
     constructor(original: BitString) : this(original.length, original.bits)
 
     /**
-     * Adds a zero bit to the end of the [BitString].
+     * Adds a zero bit to the end of this [BitString].
      */
     fun addZero(): BitString {
         // Shift one left.
@@ -16,7 +16,7 @@ class BitString(var length: Int = 0, var bits: Long = 0) {
     }
 
     /**
-     * Adds a one bit to the end of the [BitString].
+     * Adds a one bit to the end of this [BitString].
      */
     fun addOne(): BitString {
         // Shift one left and perform bitwise or with 1.
@@ -28,7 +28,7 @@ class BitString(var length: Int = 0, var bits: Long = 0) {
     }
 
     /**
-     * Removes the first bit from the [BitString].
+     * Removes the first bit from this [BitString].
      */
     fun removeFirst(): Char {
         if(length == 0) throw NoSuchElementException("Cannot remove first bit of empty bit string")
@@ -44,7 +44,7 @@ class BitString(var length: Int = 0, var bits: Long = 0) {
     }
 
     /**
-     * Removes the last bit from the [BitString].
+     * Removes the last bit from this [BitString].
      */
     fun removeLast(): Char {
         if(length == 0) throw NoSuchElementException("Cannot remove last bit of empty bit string")
@@ -60,7 +60,7 @@ class BitString(var length: Int = 0, var bits: Long = 0) {
     }
 
     /**
-     * Clears the [BitString].
+     * Clears this [BitString].
      */
     fun clear(): BitString {
         length = 0

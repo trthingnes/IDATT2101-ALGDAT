@@ -19,7 +19,7 @@ class Huffman {
     fun compress(input: File, output: File) {
         val frequencies = countFrequenciesInFile(input)
         val bitStrings = getBitStringsFromTree(getTreeFromFrequencies(frequencies))
-        val outputBytes = arrayListOf<Int>()
+        val encodedBytes = arrayListOf<Int>()
         var padding = 0
 
         DataInputStream(FileInputStream(input)).use {
@@ -36,7 +36,7 @@ class Huffman {
 
                     // If the string has length 8, push its byte value and reset it.
                     if(bitStringToWrite.length == 8) {
-                        outputBytes.add(bitStringToWrite.bits.toInt())
+                        encodedBytes.add(bitStringToWrite.bits.toInt())
                         bitStringToWrite.clear()
                     }
                 }
@@ -47,7 +47,7 @@ class Huffman {
                 bitStringToWrite.addZero()
                 padding++
             }
-            outputBytes.add(bitStringToWrite.bits.toInt())
+            encodedBytes.add(bitStringToWrite.bits.toInt())
         }
 
         DataOutputStream(FileOutputStream(output)).use {
@@ -58,7 +58,7 @@ class Huffman {
             it.writeByte(padding)
 
             // Write all the encoded bytes to the list.
-            outputBytes.forEach { b -> it.writeByte(b) }
+            encodedBytes.forEach { b -> it.writeByte(b) }
         }
     }
 
@@ -67,7 +67,7 @@ class Huffman {
      */
     fun decompress(input: File, output: File) {
         val frequencies = Array(256) { 0 }
-        val inputBytes = arrayListOf<Int>()
+        val encodedBytes = arrayListOf<Int>()
         val outputBytes = arrayListOf<Int>()
         val padding: Int
 
@@ -82,7 +82,7 @@ class Huffman {
 
             // Read the rest of the file as bytes.
             while(it.available() > 0) {
-                inputBytes.add(it.read())
+                encodedBytes.add(it.read())
             }
         }
 
@@ -90,10 +90,10 @@ class Huffman {
         val root = getTreeFromFrequencies(frequencies)
 
         // If padding was added on compression, leave the last byte as a special case.
-        val range = if(padding == 0) inputBytes.indices else 0 until inputBytes.lastIndex
+        val range = if(padding > 0) (0 until encodedBytes.lastIndex) else encodedBytes.indices
         val bitString = BitString()
         for(i in range) {
-            val byte = inputBytes[i]
+            val byte = encodedBytes[i]
             bitString.concat(BitString(8, byte.toLong()))
 
             while(bitString.length >= 24) {
@@ -103,16 +103,17 @@ class Huffman {
 
         // If the last byte has padding.
         if(padding > 0) {
-            val byte = inputBytes.last()
+            val byte = encodedBytes.last()
             bitString.concat(BitString(8, byte.toLong()))
             repeat(padding) { bitString.removeLast() }
+        }
 
-            while(bitString.length > 0) {
-                try {
-                    outputBytes.add(findByteInTree(root, bitString))
-                } catch(e: NoSuchElementException) {
-                    println("Encountered error while reading padded byte.")
-                }
+        // Keep writing bytes until the bit string ends.
+        while(bitString.length > 0) {
+            try {
+                outputBytes.add(findByteInTree(root, bitString))
+            } catch(e: Exception) {
+                println("Encountered error while parsing end of bit string.")
             }
         }
 
@@ -139,7 +140,7 @@ class Huffman {
         }
 
         // Add the byte for the right character.
-        return currentNode.byte ?: throw IllegalStateException("Reached leaf node that has no byte value.")
+        return currentNode.value ?: throw IllegalStateException("Reached leaf node that has no byte value.")
     }
 
     /**
@@ -192,7 +193,7 @@ class Huffman {
         root.right?.let { getBitStringsFromTree(it, BitString(string).addOne(), strings) }
 
         if (root.left == null && root.right == null) {
-            root.byte?.let { strings[it] = string }
+            root.value?.let { strings[it] = string }
         }
 
         return strings
