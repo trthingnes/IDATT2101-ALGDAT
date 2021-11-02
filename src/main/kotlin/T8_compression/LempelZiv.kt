@@ -11,7 +11,7 @@ class LempelZiv {
     fun compress(input: File, output: File) {
         // Read all bytes from file.
         DataInputStream(FileInputStream(input)).use {
-            while(it.available() > 0) bytes.add(it.read())
+            while(it.available() > 0) bytes.add(it.readByte().toInt()) // Read signed bytes from file.
         }
 
         val out = DataOutputStream(FileOutputStream(output))
@@ -23,16 +23,16 @@ class LempelZiv {
 
             // If no good pointer was found.
             if((pointer == null) || (pointer.length == 0)) {
-                skipped.add(bytes[i]) // Add this raw byte to the skipped bytes to be written later.
-                buffer.add(bytes[i]) // Add this raw byte to the buffer.
+                skipped.add(bytes[i]) // Add this unsigned byte to be written later.
+                buffer.add(bytes[i]) // Add this unsigned byte to the buffer.
                 i++
             }
             else {
                 // If a pointer could be made, we push this pointer instead.
                 // Write previously skipped bytes to the file.
                 if(skipped.isNotEmpty()) {
-                    out.writeByte(skipped.size) // Write one positive byte to indicate length.
-                    skipped.forEach { out.writeByte(it) } // Write all skipped bytes.
+                    out.writeByte(skipped.size) // Write one positive signed byte to indicate length.
+                    skipped.forEach { out.writeByte(it) } // Write all skipped signed bytes.
                 }
                 out.writeByte(pointer.length * -1) // Write one negative byte as length.
                 out.writeShort(pointer.offset) // Write two bytes to indicate how far back to look.
@@ -50,7 +50,37 @@ class LempelZiv {
      * If no pointer that saves space is found, this method returns null.
      */
     private fun findBestPointer(index: Int): Pointer? {
-        TODO()
+        val starts = arrayListOf<Int>()
+        for (i in buffer.indices) {
+            if(buffer[i] == bytes[index]) starts.add(i)
+        }
+        var best = Pointer(findMatchLength(starts[0], index), buffer.size - starts[0])
+
+        for(i in starts) {
+            val length = findMatchLength(i, index)
+            if(length > best.length) {
+                best = Pointer(length, buffer.size - i)
+            }
+        }
+
+        return if(best.length <= 3) null else best
+    }
+
+    /**
+     * Takes the indices for both the buffer and index and finds the number of matching bytes in a row.
+     */
+    private fun findMatchLength(bufferIndex: Int, index: Int): Int {
+        var bi = bufferIndex + 1
+        var i = index + 1
+        var length = 1
+
+        while(buffer[bi] == bytes[i]) {
+            length++
+            bi++
+            i++
+        }
+
+        return length
     }
 
     fun decompress(input: File, output: File) {
@@ -65,16 +95,16 @@ class LempelZiv {
             if(length > 0) {
                 // Write all the bytes directly to the output file.
                 repeat(length.toInt()) {
-                    // TODO: Verify that all + and - signs are correct when writing and reading. (Massive bug potential)
-                    val byte = inp.read()
-                    buffer.add(byte)
-                    out.writeByte(byte)
+                    val byte = inp.readByte()
+                    buffer.add(byte.toInt())
+                    out.writeByte(byte.toInt())
                 }
             }
             // If the length is negative, the following is a pointer.
             else if(length < 0) {
                 val offset = inp.readShort()
-                findBytesInBuffer(abs(length.toInt()), offset.toInt()).forEach { out.write(it) }
+                // Write the bytes from the buffer to the file.
+                findBytesInBuffer(abs(length.toInt()), offset.toInt()).forEach { out.writeByte(it) }
             }
             else throw IllegalStateException("Got zero as a block length. The file might be corrupted.")
         }
@@ -83,23 +113,19 @@ class LempelZiv {
         bytes.clear()
         buffer.clear()
     }
-}
 
-/**
- * Takes the length and offset from a pointer and retrieves the bytes this corresponds to.
- */
-private fun findBytesInBuffer(length: Int, offset: Int): ArrayList<Int> {
-    TODO()
+    /**
+     * Takes the length and offset from a pointer and retrieves the bytes this corresponds to.
+     */
+    private fun findBytesInBuffer(length: Int, offset: Int): ArrayList<Int> {
+        TODO()
+    }
 }
 
 /**
  * Pointer is used to show where duplicate text was found.
  */
-class Pointer(val length: Int, val offset: Int) {
-    companion object {
-        const val BYTES_LENGTH = 3
-    }
-}
+class Pointer(val length: Int, val offset: Int)
 
 /**
  * Buffer is an ArrayList with a max size.
