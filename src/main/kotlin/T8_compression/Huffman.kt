@@ -3,7 +3,6 @@ package T8_compression
 import java.io.*
 import java.lang.IllegalStateException
 import java.util.*
-import kotlin.NoSuchElementException
 
 fun main() {
     val h = Huffman()
