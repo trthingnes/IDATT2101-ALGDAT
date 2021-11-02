@@ -4,13 +4,6 @@ import java.io.*
 import java.lang.IllegalStateException
 import java.util.*
 
-fun main() {
-    val h = Huffman()
-
-    h.compress(File("./diverse.txt"), File("./diverse.huff.txt"))
-    h.decompress(File("./diverse.huff.txt"), File("./diverse.decoded.txt"))
-}
-
 class Huffman {
     /**
      * Uses Huffman encoding to compress the input file into the output file.
@@ -197,4 +190,11 @@ class Huffman {
 
         return strings
     }
+}
+
+/**
+ * Nodes are parts of the Huffman tree used to encode files.
+ */
+class Node(var value: Int?, var frequency: Int, var left: Node? = null, var right: Node? = null) {
+    constructor(a: Node, b: Node) : this(null, a.frequency + b.frequency, a, b)
 }

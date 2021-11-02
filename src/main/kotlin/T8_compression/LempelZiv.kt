@@ -8,6 +8,9 @@ class LempelZiv {
     private var buffer = Buffer<Int>(32*1024)
     private var bytes = arrayListOf<Int>()
 
+    /**
+     * Uses Lempel Ziv encoding to compress the input file into the output file.
+     */
     fun compress(input: File, output: File) {
         // Read all bytes from file.
         DataInputStream(FileInputStream(input)).use {
@@ -33,11 +36,19 @@ class LempelZiv {
                 if(skipped.isNotEmpty()) {
                     out.writeByte(skipped.size) // Write one positive signed byte to indicate length.
                     skipped.forEach { out.writeByte(it) } // Write all skipped signed bytes.
+                    skipped.clear() // Empty the list when the bytes are all written.
                 }
                 out.writeByte(pointer.length * -1) // Write one negative byte as length.
                 out.writeShort(pointer.offset) // Write two bytes to indicate how far back to look.
                 i += pointer.length // Skip the rest of the compressed segment.
             }
+        }
+
+        // Print the final skipped characters.
+        if(skipped.isNotEmpty()) {
+            out.writeByte(skipped.size) // Write one positive signed byte to indicate length.
+            skipped.forEach { out.writeByte(it) } // Write all skipped signed bytes.
+            skipped.clear() // Empty the list when the bytes are all written.
         }
 
         out.close()
@@ -46,43 +57,8 @@ class LempelZiv {
     }
 
     /**
-     * Compares the bytes list and the buffer starting at the given index, and finds the longest pointer.
-     * If no pointer that saves space is found, this method returns null.
+     * Decompresses a file compressed with Lempel Ziv encoding.
      */
-    private fun findBestPointer(index: Int): Pointer? {
-        val starts = arrayListOf<Int>()
-        for (i in buffer.indices) {
-            if(buffer[i] == bytes[index]) starts.add(i)
-        }
-        var best = Pointer(findMatchLength(starts[0], index), buffer.size - starts[0])
-
-        for(i in starts) {
-            val length = findMatchLength(i, index)
-            if(length > best.length) {
-                best = Pointer(length, buffer.size - i)
-            }
-        }
-
-        return if(best.length <= 3) null else best
-    }
-
-    /**
-     * Takes the indices for both the buffer and index and finds the number of matching bytes in a row.
-     */
-    private fun findMatchLength(bufferIndex: Int, index: Int): Int {
-        var bi = bufferIndex + 1
-        var i = index + 1
-        var length = 1
-
-        while(buffer[bi] == bytes[i]) {
-            length++
-            bi++
-            i++
-        }
-
-        return length
-    }
-
     fun decompress(input: File, output: File) {
         val inp = DataInputStream(FileInputStream(input))
         val out = DataOutputStream(FileOutputStream(output))
@@ -115,10 +91,55 @@ class LempelZiv {
     }
 
     /**
+     * Compares the bytes list and the buffer starting at the given index, and finds the longest pointer.
+     * If no pointer that saves space is found, this method returns null.
+     */
+    private fun findBestPointer(index: Int): Pointer? {
+        val starts = arrayListOf<Int>()
+        for (i in buffer.indices) {
+            if(buffer[i] == bytes[index]) starts.add(i)
+        }
+        var best = Pointer(-1, -1)
+
+        for(i in starts) {
+            val length = findMatchLength(i, index)
+            if(length > best.length) {
+                best = Pointer(length, buffer.size - i)
+            }
+        }
+
+        return if(best.length <= 3) null else best
+    }
+
+    /**
+     * Takes the indices for both the buffer and index and finds the number of matching bytes in a row.
+     */
+    private fun findMatchLength(bufferIndex: Int, index: Int): Int {
+        var bi = bufferIndex + 1
+        var i = index + 1
+        var length = 1
+
+        while(bi < buffer.size && i < bytes.size && buffer[bi] == bytes[i] ) {
+            length++
+            bi++
+            i++
+        }
+
+        return length
+    }
+
+    /**
      * Takes the length and offset from a pointer and retrieves the bytes this corresponds to.
      */
     private fun findBytesInBuffer(length: Int, offset: Int): ArrayList<Int> {
-        TODO()
+        val index = buffer.size - offset
+        val result = arrayListOf<Int>()
+
+        for(i in 0 until length) {
+            result.add(buffer[i+index])
+        }
+
+        return result
     }
 }
 
