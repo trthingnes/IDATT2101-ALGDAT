@@ -5,8 +5,10 @@ import java.lang.IllegalStateException
 
 fun main() {
     val c = Compressor()
-    c.compress(File("test.pdf"), File("test.c.pdf"))
-    c.decompress(File("test.c.pdf"), File("test.d.pdf"))
+    val compress = true
+
+    if(compress) c.compress(File("diverse.txt"), File("diverse.c.txt"))
+    else c.decompress(File("diverse.c.txt"), File("diverse.d.txt"))
 }
 
 class Compressor {

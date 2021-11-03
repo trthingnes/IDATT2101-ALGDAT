@@ -33,12 +33,12 @@ class LempelZiv {
             else {
                 // If a pointer could be made, we push this pointer instead.
                 // Write previously skipped bytes to the file.
-                if(skipped.isNotEmpty()) {
-                    out.writeByte(skipped.size) // Write one positive signed byte to indicate length.
-                    skipped.forEach { out.writeByte(it) } // Write all skipped signed bytes.
+                while(skipped.isNotEmpty()) {
+                    out.writeShort(skipped.size) // Write one positive signed byte to indicate length.
+                    skipped.forEach { out.writeByte(it)} // Write all skipped signed bytes.
                     skipped.clear() // Empty the list when the bytes are all written.
                 }
-                out.writeByte(pointer.length * -1) // Write one negative byte as length.
+                out.writeShort(pointer.length * -1) // Write one negative byte as length.
                 out.writeShort(pointer.offset) // Write two bytes to indicate how far back to look.
                 i += pointer.length // Skip the rest of the compressed segment.
             }
@@ -46,7 +46,7 @@ class LempelZiv {
 
         // Print the final skipped characters.
         if(skipped.isNotEmpty()) {
-            out.writeByte(skipped.size) // Write one positive signed byte to indicate length.
+            out.writeShort(skipped.size) // Write one positive signed byte to indicate length.
             skipped.forEach { out.writeByte(it) } // Write all skipped signed bytes.
             skipped.clear() // Empty the list when the bytes are all written.
         }
@@ -65,7 +65,7 @@ class LempelZiv {
 
         while(inp.available() > 0) {
             // Read new block
-            val length = inp.readByte()
+            val length = inp.readShort()
 
             // If the length is positive, the following is skipped bytes.
             if(length > 0) {
@@ -79,12 +79,14 @@ class LempelZiv {
             // If the length is negative, the following is a pointer.
             else if(length < 0) {
                 val offset = inp.readShort()
+
                 // Write the bytes from the buffer to the file.
                 findBytesInBuffer(abs(length.toInt()), offset.toInt()).forEach { out.writeByte(it) }
             }
             else throw IllegalStateException("Got zero as a block length. The file might be corrupted.")
         }
 
+        inp.close()
         out.close()
         bytes.clear()
         buffer.clear()
@@ -108,7 +110,7 @@ class LempelZiv {
             }
         }
 
-        return if(best.length <= 3) null else best
+        return if(best.length <= 4) null else best
     }
 
     /**
