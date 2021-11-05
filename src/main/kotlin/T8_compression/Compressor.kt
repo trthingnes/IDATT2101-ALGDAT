@@ -5,10 +5,13 @@ import java.lang.IllegalStateException
 
 fun main() {
     val c = Compressor()
-    val compress = true
 
-    if(compress) c.compress(File("diverse.txt"), File("diverse.c.txt"))
-    else c.decompress(File("diverse.c.txt"), File("diverse.d.txt"))
+    val compress = true
+    val filename = "diverse"
+    val fileext = "lyx"
+
+    if(compress) c.compress(File("$filename.$fileext"), File("$filename.c.$fileext"))
+    else c.decompress(File("$filename.c.$fileext"), File("$filename.d.$fileext"))
 }
 
 class Compressor {

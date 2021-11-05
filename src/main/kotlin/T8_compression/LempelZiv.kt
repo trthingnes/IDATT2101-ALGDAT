@@ -5,7 +5,7 @@ import java.lang.IllegalStateException
 import kotlin.math.abs
 
 class LempelZiv {
-    private var buffer = Buffer<Int>(32*1024)
+    private var buffer = Buffer<Int>(Short.MAX_VALUE.toInt())
     private var bytes = arrayListOf<Int>()
 
     /**
