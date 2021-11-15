@@ -5,8 +5,7 @@ import java.util.*
 
 fun main() {
     val p = Preprocessor()
-    //p.preprocess(arrayOf(0), "noder_t.txt", "kanter_t.txt", "prep_t.txt")
-    //println(p.read("prep_t.txt").contentDeepToString())
+    p.preprocess(arrayOf(2151254, 2890591, 5116554), "noder.txt", "kanter.txt", "prep.txt")
 }
 
 class Preprocessor {
@@ -23,15 +22,19 @@ class Preprocessor {
         }
 
         // Calculate all distances from landmarks
+        println("Finding all distances from landmarks.")
         val resultFrom = Array(landmarks.size) { Array(nodes) { -1 } }
         for(l in landmarks.indices) {
+            println("Finding distances for landmark ${landmarks[l]}")
             val res = d.dijkstra(landmarks[l], nodes, edges)
             resultFrom[l] = res.map { it?.second ?: -1 }.toTypedArray()
         }
 
         // Calculate all distances to landmarks
+        println("Finding all distances to landmarks.")
         val resultTo = Array(landmarks.size) { Array(nodes) { -1 } }
         for(l in landmarks.indices) {
+            println("Finding distances for landmark ${landmarks[l]}")
             val res = d.dijkstra(landmarks[l], nodes, d.reverse(edges))
             resultTo[l] = res.map { it?.second ?: -1 }.toTypedArray()
         }
