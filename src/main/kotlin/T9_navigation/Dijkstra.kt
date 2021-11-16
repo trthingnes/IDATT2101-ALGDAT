@@ -1,5 +1,7 @@
 package T9_navigation
 
+import java.util.*
+
 fun main() {
     val d = Dijkstra()
     val edges = listOf(
@@ -27,30 +29,37 @@ fun main() {
 }
 
 class Dijkstra {
-    fun dijkstra(start: Int, n: Int, e: List<Array<Int>>): Array<Pair<Int, Int>?> {
-        val path = Array<Pair<Int, Int>?>(n) { null } // Pair(origin, cost)
+    fun dijkstra(start: Int, n: Int, edges: List<Array<Int>>): Array<Pair<Int, Int>?> {
+        val path = Array<Pair<Int, Int>?>(n) { null }
         val nodes = Array(n) { Node(it) }
-        val edges = Array(e.size) { Edge(nodes[e[it][0]], nodes[e[it][1]], e[it][2]) }
+
+        edges.forEach {
+            nodes[it[0]].neighbours.add(Pair(nodes[it[1]], it[2]))
+        }
 
         nodes[start].cost = 0
         nodes[start].visited = true
         path[nodes[start].number] = Pair(nodes[start].number, 0)
 
         // Create a queue that prioritizes low distance.
-        val queue = arrayListOf<Edge>()
-        queue.addAll(edges)
-        queue.sortBy { edge -> edge.cost }
+        val queue = PriorityQueue<Node>() { a, b -> a.cost - b.cost }
+        queue.add(nodes[start])
 
         // While there are undiscovered nodes.
-        while(queue.any { it.origin.visited && !it.destination.visited }) {
-            // Find the best edge that goes from a visited node to an unvisited node.
-            val edge = queue.first { it.origin.visited && !it.destination.visited }
-            queue.remove(edge)
+        while(queue.isNotEmpty()) {
+            val node = queue.poll()
 
-            // Set the node as visited.
-            edge.destination.visited = true
-            edge.destination.cost = edge.origin.cost + edge.cost
-            path[edge.destination.number] = Pair(edge.origin.number, edge.destination.cost)
+            //For every neighbour node that is not visited.
+            node.neighbours.filter { !it.first.visited }.forEach {
+                val neighbour = it.first
+                val cost = it.second
+
+                // Set the neighbour as visited and update the costs.
+                neighbour.cost = node.cost + cost
+                neighbour.visited = true
+                path[neighbour.number] = Pair(node.number, neighbour.cost)
+                queue.add(neighbour)
+            }
         }
 
         return path
@@ -60,6 +69,10 @@ class Dijkstra {
         return e.map { arrayOf(it[1], it[0], it[2]) }
     }
 
-    class Node(val number: Int, var visited: Boolean = false, var cost: Int = Int.MAX_VALUE)
-    class Edge(val origin: Node, val destination: Node, val cost: Int)
+    class Node(
+        val number: Int,
+        val neighbours: ArrayList<Pair<Node, Int>> = arrayListOf(), // Pair(node, cost)
+        var visited: Boolean = false,
+        var cost: Int = Int.MAX_VALUE
+    )
 }
