@@ -5,7 +5,8 @@ import java.util.*
 
 fun main() {
     val p = Preprocessor()
-    p.preprocess(arrayOf(2151254, 2890591, 5116554), "noder.txt", "kanter.txt", "prep.txt")
+    //p.preprocess(arrayOf(2151254, 2890591, 5116554), "noder.txt", "kanter.txt", "prep.txt")
+    p.preprocess(arrayOf(30979, 37890, 90946), "noder_i.txt", "kanter_i.txt", "prep_i.txt")
 }
 
 class Preprocessor {

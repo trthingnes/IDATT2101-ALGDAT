@@ -1,38 +1,75 @@
 package T9_navigation
 
+import java.util.*
+
 fun main() {
     val a = AStar()
-    val edges = listOf(
-        arrayOf(0,1,2),
-        arrayOf(0,2,6),
-        arrayOf(1,3,5),
-        arrayOf(2,3,8),
-        arrayOf(3,5,15),
-        arrayOf(3,4,10),
-        arrayOf(4,5,6),
-        arrayOf(5,6,6),
-        arrayOf(4,6,2),
-
-        arrayOf(1,0,2),
-        arrayOf(2,0,6),
-        arrayOf(3,1,5),
-        arrayOf(3,2,8),
-        arrayOf(5,3,15),
-        arrayOf(4,3,10),
-        arrayOf(5,4,6),
-        arrayOf(6,5,6),
-        arrayOf(6,4,2),
-    )
-    val data = Preprocessor().read("prep_t.txt")
-    a.alt(0, 7, edges, data).forEach { println(it) }
+    val data = Preprocessor().read("prep_i.txt")
 }
 
 class AStar {
-    fun alt(start: Int, n: Int, e: List<Array<Int>>, landmarksData: Array<Array<Array<Int>>>): Array<Pair<Int, Int>?> {
-        val distFromLandmarks = landmarksData[0]
-        val distToLandmarks = landmarksData[1]
+    fun alt(start: Int, end: Int, n: Int, edges: List<Array<Int>>, landmarksData: Array<Array<Array<Int>>>): Array<Pair<Int, Int>?> {
+        val lmFrom = landmarksData[0]
+        val lmTo = landmarksData[1]
 
+        val path = Array<Pair<Int, Int>?>(n) { null }
+        val nodes = Array(n) { Node(it) }
 
-        return TODO()
+        edges.forEach {
+            nodes[it[0]].neighbours.add(Pair(nodes[it[1]], it[2]))
+        }
+
+        nodes[start].cost = 0
+        nodes[start].visited = true
+        path[nodes[start].number] = Pair(nodes[start].number, 0)
+
+        // Create a queue that prioritizes low distance.
+        val queue = PriorityQueue<Node>() { a, b -> a.weightedCost - b.weightedCost }
+        queue.add(nodes[start])
+
+        // While there are undiscovered nodes.
+        while(queue.isNotEmpty()) {
+            val node = queue.poll()
+
+            //For every neighbour node that is not visited.
+            node.neighbours.filter { !it.first.visited }.forEach {
+                val neighbour = it.first
+                val cost = it.second
+
+                // Set the neighbour as visited and update the costs.
+                neighbour.cost = node.cost + cost
+                neighbour.weightedCost = neighbour.cost + calculateDistanceRemaining(lmFrom, lmTo, neighbour.number, end)
+                neighbour.visited = true
+                path[neighbour.number] = Pair(node.number, neighbour.cost)
+                queue.add(neighbour)
+            }
+        }
+
+        return path
     }
+
+    /**
+     * Takes information about landmarks and the start and end [Node].
+     */
+    private fun calculateDistanceRemaining(lmFrom: Array<Array<Int>>, lmTo: Array<Array<Int>>, start: Int, end: Int): Int {
+        var best = 0
+
+        for(i in lmFrom.indices) {
+            val distFrom = lmFrom[i][end] - lmFrom[i][start]
+            val distTo = lmTo[i][start] - lmTo[i][end]
+
+            if(distFrom > best) best = distFrom
+            if(distTo > best) best = distTo
+        }
+
+        return best
+    }
+
+    class Node(
+        val number: Int,
+        val neighbours: ArrayList<Pair<Node, Int>> = arrayListOf(), // Pair(node, cost)
+        var visited: Boolean = false,
+        var weightedCost: Int = Int.MAX_VALUE,
+        var cost: Int = Int.MAX_VALUE
+    )
 }
