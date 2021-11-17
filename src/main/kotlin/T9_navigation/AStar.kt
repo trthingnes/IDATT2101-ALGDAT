@@ -12,7 +12,7 @@ class AStar {
      * @param end The number of the node to end the search in. If omitted, finds all nodes.
      * @return An array representing the route taken on form {(firstNode, cost), (secondNode, cost),...}
      */
-    fun alt(n: Int, edges: List<Array<Int>>, landmarksData: Array<Array<Array<Int>>>, start: Int, end: Int): Array<Pair<Int, Int>> {
+    fun alt(n: Int, edges: List<Array<Int>>, landmarksData: Array<Array<Array<Int>>>, start: Int, end: Int): Array<Pair<Int, Int>?> {
         val lmFrom = landmarksData[0]
         val lmTo = landmarksData[1]
 
@@ -25,7 +25,7 @@ class AStar {
 
         nodes[start].cost = 0
         nodes[start].visited = true
-        path.add(Pair(nodes[start].number, 0))
+
 
         // Create a queue that prioritizes low distance.
         val queue = PriorityQueue<Node>() { a, b -> a.priority - b.priority }
@@ -36,20 +36,29 @@ class AStar {
             val node = queue.poll()
 
             //For every neighbour node that is not visited.
-            node.neighbours.filter { !it.first.visited }.forEach {
+            node.neighbours.forEach {
                 val neighbour = it.first
                 val cost = it.second
 
                 // Set the neighbour as visited and update the costs.
-                neighbour.cost = node.cost + cost
-                neighbour.weight = calculateDistance(lmFrom, lmTo, neighbour.number, end)
-                neighbour.visited = true
-                path.add(Pair(neighbour.number, neighbour.cost))
-                queue.add(neighbour)
+                if (neighbour.cost > neighbour.cost + cost){
+                    neighbour.cost = node.cost + cost
+                    neighbour.weight = calculateDistance(lmFrom, lmTo, neighbour.number, end)
+                    neighbour.previous = node
+                    queue.remove(neighbour)
+                    queue.add(neighbour)
+                }
             }
+            node.visited = true
         }
 
-        return path.toTypedArray()
+        val result = arrayListOf<Pair<Int, Int>?>()
+        result.add(Pair(nodes[start].number, 0))
+        nodes.forEach {
+            if (it.previous == null) result.add(null)
+            else result.add(Pair(it.previous!!.number, it.cost))
+        }
+        return result.toTypedArray()
     }
 
     /**
@@ -78,6 +87,7 @@ class AStar {
         val number: Int,
         val neighbours: ArrayList<Pair<Node, Int>> = arrayListOf(), // Pair(node, cost)
         var visited: Boolean = false,
+        var previous: Node? = null,
         var weight: Int = Int.MAX_VALUE,
         var cost: Int = Int.MAX_VALUE
     ) {
