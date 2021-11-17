@@ -8,11 +8,9 @@ class Dijkstra {
      * @param n The number of nodes in the graph.
      * @param edges The edges in the graph, as a list of arrays with size 3.
      * @param start The number of the node to start the search from.
-     * @param end (optional) The number of the node to end the search in. If omitted, finds all nodes.
      * @return An array of size n with node number as index representing the path on form {(prevNode, cost),...}.
      */
-    fun dijkstra(n: Int, edges: List<Array<Int>>, start: Int, end: Int? = null): Array<Pair<Int, Int>?> {
-        val path = Array<Pair<Int, Int>?>(n) { null }
+    fun dijkstra(n: Int, edges: List<Array<Int>>, start: Int): Array<Pair<Int, Int>?> {
         val nodes = Array(n) { Node(it) }
 
         edges.forEach {
@@ -20,8 +18,6 @@ class Dijkstra {
         }
 
         nodes[start].cost = 0
-        nodes[start].visited = true
-        path[nodes[start].number] = Pair(nodes[start].number, 0)
 
         // Create a queue that prioritizes low distance.
         val queue = PriorityQueue<Node>() { a, b -> a.cost - b.cost }
@@ -31,23 +27,30 @@ class Dijkstra {
         while(queue.isNotEmpty()) {
             val node = queue.poll()
 
-            // If an end node is defined, and we have found it.
-            if(end != null && node.number == end) break
-
             //For every neighbour node that is not visited.
-            node.neighbours.filter { !it.first.visited }.forEach {
+            node.neighbours.forEach {
                 val neighbour = it.first
                 val cost = it.second
 
-                // Set the neighbour as visited and update the costs.
-                neighbour.cost = node.cost + cost
-                neighbour.visited = true
-                path[neighbour.number] = Pair(node.number, neighbour.cost)
-                queue.add(neighbour)
+                if(neighbour.cost > node.cost + cost) {
+                    // Set the neighbour as visited and update the costs.
+                    neighbour.cost = node.cost + cost
+                    neighbour.previous = node
+                    queue.remove(neighbour) // Insert or reinsert neighbour in queue. Fix PQ problems.
+                    queue.add(neighbour)
+                }
             }
+
+            node.visited = true
         }
 
-        return path
+        val result = arrayListOf<Pair<Int, Int>?>()
+        nodes.forEach {
+            if(it.previous == null) result.add(null)
+            else result.add(Pair(it.previous!!.number, it.cost))
+        }
+
+        return result.toTypedArray()
     }
 
     /**
@@ -61,6 +64,7 @@ class Dijkstra {
         val number: Int,
         val neighbours: ArrayList<Pair<Node, Int>> = arrayListOf(), // Pair(node, cost)
         var visited: Boolean = false,
+        var previous: Node? = null,
         var cost: Int = Int.MAX_VALUE
     )
 }
