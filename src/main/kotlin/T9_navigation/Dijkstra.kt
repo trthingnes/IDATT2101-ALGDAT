@@ -25,11 +25,19 @@ fun main() {
         arrayOf(6,5,6),
         arrayOf(6,4,2),
     )
-    d.dijkstra(0, 7, d.reverse(edges)).forEach { println(it) }
+    d.dijkstra(7, d.reverse(edges), 0, 3).forEach { println(it) }
 }
 
 class Dijkstra {
-    fun dijkstra(start: Int, n: Int, edges: List<Array<Int>>): Array<Pair<Int, Int>?> {
+    /**
+     * Runs Dijkstra's algorithm on the given graph.
+     * @param n The number of nodes in the graph.
+     * @param edges The edges in the graph, as a list of arrays with size 3.
+     * @param start The number of the node to start the search from.
+     * @param end (optional) The number of the node to end the search in. If omitted, finds all nodes.
+     * @return An array of size n with node number as index representing the path on form {(prevNode, cost),...}.
+     */
+    fun dijkstra(n: Int, edges: List<Array<Int>>, start: Int, end: Int? = null): Array<Pair<Int, Int>?> {
         val path = Array<Pair<Int, Int>?>(n) { null }
         val nodes = Array(n) { Node(it) }
 
@@ -49,6 +57,9 @@ class Dijkstra {
         while(queue.isNotEmpty()) {
             val node = queue.poll()
 
+            // If an end node is defined, and we have found it.
+            if(end != null && node.number == end) break
+
             //For every neighbour node that is not visited.
             node.neighbours.filter { !it.first.visited }.forEach {
                 val neighbour = it.first
@@ -65,6 +76,9 @@ class Dijkstra {
         return path
     }
 
+    /**
+     * Returns a copy of the given list with all edges flipped.
+     */
     fun reverse(e: List<Array<Int>>): List<Array<Int>> {
         return e.map { arrayOf(it[1], it[0], it[2]) }
     }
