@@ -1,7 +1,6 @@
 package T9_navigation
 
 import java.io.*
-import java.util.*
 
 fun main() {
     val p = Preprocessor()
@@ -11,16 +10,10 @@ fun main() {
 
 class Preprocessor {
     fun preprocess(landmarks: Array<Int>, nodesPath: String, edgesPath: String, outputPath: String) {
+        val f = FileReader()
         val d = Dijkstra()
-        val nodes = StringTokenizer(File(nodesPath).readLines().first()).nextToken().toInt() // Number of nodes
-        val edgesData = arrayListOf<String>()
-        edgesData.addAll(File(edgesPath).readLines())
-        edgesData.removeFirst()
-
-        val edges = edgesData.map { // List of edges -> (from, to, cost)
-            val t = StringTokenizer(it)
-            arrayOf(t.nextToken().toInt(), t.nextToken().toInt(), t.nextToken().toInt())
-        }
+        val nodes = f.readNodeCount(nodesPath)
+        val edges = f.readEdges(edgesPath)
 
         // Calculate all distances from landmarks
         println("Finding all distances from landmarks.")
@@ -67,23 +60,5 @@ class Preprocessor {
         }
 
         writer.close()
-    }
-
-    fun read(preprocessedPath: String): Array<Array<Array<Int>>>{
-        val reader = DataInputStream(FileInputStream(File(preprocessedPath)))
-
-        val nodes = reader.readInt()
-        val landmarks = reader.readInt()
-
-        val result = Array(2) { Array(landmarks) { Array(nodes) { -1 } } }
-        for(r in result.indices) {
-            for(l in 0 until landmarks) {
-                for(n in 0 until nodes) {
-                    result[r][l][n] = reader.readInt()
-                }
-            }
-        }
-
-        return result
     }
 }

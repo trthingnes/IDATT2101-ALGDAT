@@ -28,7 +28,7 @@ class AStar {
         path.add(Pair(nodes[start].number, 0))
 
         // Create a queue that prioritizes low distance.
-        val queue = PriorityQueue<Node>() { a, b -> a.weightedCost - b.weightedCost }
+        val queue = PriorityQueue<Node>() { a, b -> a.priority - b.priority }
         queue.add(nodes[start])
 
         // While there are undiscovered nodes.
@@ -42,7 +42,7 @@ class AStar {
 
                 // Set the neighbour as visited and update the costs.
                 neighbour.cost = node.cost + cost
-                neighbour.weightedCost = neighbour.cost + calculateDistance(lmFrom, lmTo, neighbour.number, end)
+                neighbour.weight = calculateDistance(lmFrom, lmTo, neighbour.number, end)
                 neighbour.visited = true
                 path.add(Pair(neighbour.number, neighbour.cost))
                 queue.add(neighbour)
@@ -78,7 +78,9 @@ class AStar {
         val number: Int,
         val neighbours: ArrayList<Pair<Node, Int>> = arrayListOf(), // Pair(node, cost)
         var visited: Boolean = false,
-        var weightedCost: Int = Int.MAX_VALUE,
+        var weight: Int = Int.MAX_VALUE,
         var cost: Int = Int.MAX_VALUE
-    )
+    ) {
+        val priority get() = weight + cost
+    }
 }
