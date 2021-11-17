@@ -27,7 +27,7 @@ class Preprocessor {
         val resultFrom = Array(landmarks.size) { Array(nodes) { -1 } }
         for(l in landmarks.indices) {
             println("Finding distances for landmark ${landmarks[l]}")
-            val res = d.dijkstra(landmarks[l], nodes, edges)
+            val res = d.dijkstra(nodes, edges, landmarks[l])
             resultFrom[l] = res.map { it?.second ?: -1 }.toTypedArray()
         }
 
@@ -36,7 +36,7 @@ class Preprocessor {
         val resultTo = Array(landmarks.size) { Array(nodes) { -1 } }
         for(l in landmarks.indices) {
             println("Finding distances for landmark ${landmarks[l]}")
-            val res = d.dijkstra(landmarks[l], nodes, d.reverse(edges))
+            val res = d.dijkstra(nodes, d.reverse(edges), landmarks[l])
             resultTo[l] = res.map { it?.second ?: -1 }.toTypedArray()
         }
 
