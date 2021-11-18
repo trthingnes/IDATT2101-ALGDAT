@@ -26,6 +26,11 @@ class Dijkstra {
         // While there are undiscovered nodes.
         while(queue.isNotEmpty()) {
             val node = queue.poll()
+            println("Picked #${node.number} with pri ${node.cost}")
+            print("Other priorities: ")
+            queue.forEach { print("${it.cost} ") }
+            println()
+
 
             //For every neighbour node that is not visited.
             node.neighbours.forEach {

@@ -17,18 +17,18 @@ class Preprocessor {
 
         // Calculate all distances from landmarks
         println("Finding all distances from landmarks.")
-        val resultFrom = Array(landmarks.size) { Array(nodes) { -1 } }
+        val resultFrom = Array(landmarks.size) { Array(nodes) { Int.MAX_VALUE } }
         for(l in landmarks.indices) {
-            println("Finding distances for landmark ${landmarks[l]}")
+            println("Finding distances for landmark ${landmarks[l]}.")
             val res = d.dijkstra(nodes, edges, landmarks[l])
             resultFrom[l] = res.map { it?.second ?: -1 }.toTypedArray()
         }
 
         // Calculate all distances to landmarks
         println("Finding all distances to landmarks.")
-        val resultTo = Array(landmarks.size) { Array(nodes) { -1 } }
+        val resultTo = Array(landmarks.size) { Array(nodes) { Int.MAX_VALUE } }
         for(l in landmarks.indices) {
-            println("Finding distances for landmark ${landmarks[l]}")
+            println("Finding distances for landmark ${landmarks[l]}.")
             val res = d.dijkstra(nodes, d.reverse(edges), landmarks[l])
             resultTo[l] = res.map { it?.second ?: -1 }.toTypedArray()
         }

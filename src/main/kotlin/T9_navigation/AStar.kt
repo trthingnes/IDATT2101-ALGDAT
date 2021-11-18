@@ -16,7 +16,6 @@ class AStar {
         val lmFrom = landmarksData[0]
         val lmTo = landmarksData[1]
 
-        val path = arrayListOf<Pair<Int, Int>>()
         val nodes = Array(n) { Node(it) }
 
         edges.forEach {
@@ -24,11 +23,10 @@ class AStar {
         }
 
         nodes[start].cost = 0
-        nodes[start].visited = true
-
 
         // Create a queue that prioritizes low distance.
         val queue = PriorityQueue<Node>() { a, b -> a.priority - b.priority }
+        nodes[start].weight = calculateDistance(lmFrom, lmTo, start, end)
         queue.add(nodes[start])
 
         // While there are undiscovered nodes.
@@ -41,7 +39,7 @@ class AStar {
                 val cost = it.second
 
                 // Set the neighbour as visited and update the costs.
-                if (neighbour.cost > neighbour.cost + cost){
+                if (neighbour.cost > node.cost + cost){
                     neighbour.cost = node.cost + cost
                     neighbour.weight = calculateDistance(lmFrom, lmTo, neighbour.number, end)
                     neighbour.previous = node
@@ -49,6 +47,7 @@ class AStar {
                     queue.add(neighbour)
                 }
             }
+
             node.visited = true
         }
 
@@ -69,7 +68,7 @@ class AStar {
      * @param end The node to measure distance to.
      * @return A positive integer representing the distance from node to end.
      */
-    private fun calculateDistance(lmFrom: Array<Array<Int>>, lmTo: Array<Array<Int>>, node: Int, end: Int): Int {
+    fun calculateDistance(lmFrom: Array<Array<Int>>, lmTo: Array<Array<Int>>, node: Int, end: Int): Int {
         var best = 0
 
         for(i in lmFrom.indices) {
@@ -88,9 +87,10 @@ class AStar {
         val neighbours: ArrayList<Pair<Node, Int>> = arrayListOf(), // Pair(node, cost)
         var visited: Boolean = false,
         var previous: Node? = null,
+        var next: Node? = null, //TODO: For testing
         var weight: Int = Int.MAX_VALUE,
         var cost: Int = Int.MAX_VALUE
     ) {
-        val priority get() = weight + cost
+        val priority get() = if(weight.toLong() + cost.toLong() > Int.MAX_VALUE) Int.MAX_VALUE else weight + cost
     }
 }

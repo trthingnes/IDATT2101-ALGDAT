@@ -7,8 +7,8 @@ fun main() {
     val a = AStar()
     val f = FileReader()
 
-    val start = 68092 // Dyholl
-    val end = 68106 // Fornustekkar
+    val start = 13971 // Reykjanesbær
+    val end = 62663
 
     val result = a.alt(
         f.readNodeCount("noder_i.txt"),
@@ -18,7 +18,13 @@ fun main() {
         end
     )
     //val result = Dijkstra().dijkstra(f.readNodeCount("noder_i.txt"), f.readEdges("kanter_i.txt"), start)
-    RouteGenerator(start, result, "noder_i.txt", "interessepkt_i.txt").coordTo(end).forEach { println(it) }
+    var counter = 0
+    RouteGenerator(start, result, "noder_i.txt", "interessepkt_i.txt").coordTo(end).forEach {
+        println(it)
+        /*if(counter == 0) println(it)
+        counter++
+        counter = counter.mod(20)*/
+    }
 }
 
 class RouteGenerator(val start: Int, val result: Array<Pair<Int, Int>?>, nodesPath: String, namesPath: String) {
@@ -32,16 +38,17 @@ class RouteGenerator(val start: Int, val result: Array<Pair<Int, Int>?>, nodesPa
         val route = arrayListOf<String>()
 
         var current = end
+        println("Cost: ${result[end]?.second}")
 
         // While we have not found the start node.
         while(result[current] != null && result[current]!!.first != current) {
             val coords = getCoords(current)
-            route.add("${coords.first},${coords.second}")
+            route.add("$current ${coords.first},${coords.second}")
             current = result[current]!!.first
         }
 
         val coords = getCoords(start)
-        route.add("${coords.first},${coords.second}")
+        route.add("$start ${coords.first},${coords.second}")
 
         return route.reversed()
     }
@@ -51,7 +58,7 @@ class RouteGenerator(val start: Int, val result: Array<Pair<Int, Int>?>, nodesPa
      * @param node Node number.
      * @return Pair of name and type.
      */
-    private fun getInfo(node: Int): Pair<String, LocationType> {
+    fun getInfo(node: Int): Pair<String, LocationType> {
         val line = names.first { it.startsWith(node.toString()) }
         val st = StringTokenizer(line)
 
@@ -68,7 +75,7 @@ class RouteGenerator(val start: Int, val result: Array<Pair<Int, Int>?>, nodesPa
      * @param node Node number.
      * @return Pair of lat/long [Double].
      */
-    private fun getCoords(node: Int): Pair<Double, Double> {
+    fun getCoords(node: Int): Pair<Double, Double> {
         val line = coords.first { it.startsWith(node.toString()) }
         val st = StringTokenizer(line)
 
