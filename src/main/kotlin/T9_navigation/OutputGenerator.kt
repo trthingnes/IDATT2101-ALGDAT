@@ -2,41 +2,54 @@ package T9_navigation
 
 import java.io.File
 import java.util.*
-import kotlin.math.ceil
 
 fun main() {
     val f = FileReader()
-    val nodes = f.readNodeCount("noder_i.txt")
-    val edges = f.readEdges("kanter_i.txt")
-    val a = AStar(nodes, edges, f.readPrepData("prep_i.txt"))
+
+    println("Reading node count.")
+    val nodes = f.readNodeCount("noder.txt")
+
+    println("Reading edges.")
+    val edges = f.readEdges("kanter.txt")
+
+    println("Reading prep data.")
+    val a = AStar(nodes, edges, f.readPrepData("prep.txt"))
     val d = Dijkstra(nodes, edges)
 
     //val start = 13971 // Reykjanesbær
     //val end = 62663
 
-    val start = 55947 // Hella
-    val end = 61623 // Brú
+    val start = 6861306 // Trondheim
+    val end = 2518118 // Oslo
 
+    println("Starting algorithm.")
     val result = a.alt(start, end)
     //val result = d.dijkstra(start)
 
-    val output = OutputGenerator(result, "noder_i.txt", "interessepkt_i.txt").coordinatePathBetween(start, end)
-    val skip = (output.size/100) + 1
+    val output = OutputGenerator(start, result, "noder.txt", "interessepkt.txt")
+
+    // Print total cost to end point.
+    println("Mapped route from $start to $end and got cost ${output.costTo(end)}.")
+
+    // Print less than the given max coordinates to show route.
+    val coords = output.coordinatePathTo(end)
+    val max = 100
+    val skip = (coords.size/max) + 1
     var counter = 0
-    output.forEach {
+    coords.forEach {
         if(counter == 0) println(it)
         counter = (counter + 1) % skip
     }
 }
 
-class OutputGenerator(private val result: Array<Pair<Int, Int>?>, nodesPath: String, namesPath: String) {
+class OutputGenerator(private val start: Int, private val result: Array<Pair<Int, Int>?>, nodesPath: String, namesPath: String) {
     private val coords = File(nodesPath).readLines()
     private val names = File(namesPath).readLines()
 
     /**
      * Gets a list of coordinates mapping out a route from the given start to the given end.
      */
-    fun coordinatePathBetween(start: Int, end: Int): List<String> {
+    fun coordinatePathTo(end: Int): List<String> {
         val route = arrayListOf<String>()
 
         var current = end
@@ -55,6 +68,16 @@ class OutputGenerator(private val result: Array<Pair<Int, Int>?>, nodesPath: Str
         route.add("${coords.first},${coords.second}")
 
         return route.reversed()
+    }
+
+    fun costTo(end: Int): String {
+        val seconds = (result[end]?.second ?: 0) / 100.0
+
+        val h = (seconds / 3600).toInt()
+        val m = ((seconds % 3600) / 60).toInt()
+        val s = ((seconds % 3600) % 60).toInt()
+
+        return "$h:$m:$s"
     }
 
     /**

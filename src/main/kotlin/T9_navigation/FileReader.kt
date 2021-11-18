@@ -1,5 +1,6 @@
 package T9_navigation
 
+import java.io.BufferedInputStream
 import java.io.DataInputStream
 import java.io.File
 import java.io.FileInputStream
@@ -22,7 +23,7 @@ class FileReader {
     }
 
     fun readPrepData(preprocessedPath: String): Pair<Array<Array<Int>>, Array<Array<Int>>>{
-        val reader = DataInputStream(FileInputStream(File(preprocessedPath)))
+        val reader = DataInputStream(BufferedInputStream(FileInputStream(File(preprocessedPath))))
         val nodes = reader.readInt()
         val landmarks = reader.readInt()
 

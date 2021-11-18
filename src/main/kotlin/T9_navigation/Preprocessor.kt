@@ -45,7 +45,7 @@ class Preprocessor {
         println("Writing file.")
 
         // Write results to file
-        val writer = DataOutputStream(FileOutputStream(File(outputPath)))
+        val writer = DataOutputStream(BufferedOutputStream(FileOutputStream(File(outputPath))))
 
         // Write the first two numbers as info to the decoder.
         writer.writeInt(nodes)
