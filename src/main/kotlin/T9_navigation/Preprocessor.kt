@@ -11,16 +11,17 @@ fun main() {
 class Preprocessor {
     fun preprocess(landmarks: Array<Int>, nodesPath: String, edgesPath: String, outputPath: String) {
         val f = FileReader()
-        val d = Dijkstra()
         val nodes = f.readNodeCount(nodesPath)
         val edges = f.readEdges(edgesPath)
+        val normal = Dijkstra(nodes, edges)
+        val reverse = Dijkstra(nodes, reverse(edges))
 
         // Calculate all distances from landmarks
         println("Finding all distances from landmarks.")
         val resultFrom = Array(landmarks.size) { Array(nodes) { Int.MAX_VALUE } }
         for(l in landmarks.indices) {
             println("Finding distances for landmark ${landmarks[l]}.")
-            val res = d.dijkstra(nodes, edges, landmarks[l])
+            val res = normal.dijkstra(landmarks[l])
             resultFrom[l] = res.map { it?.second ?: -1 }.toTypedArray()
         }
 
@@ -29,7 +30,7 @@ class Preprocessor {
         val resultTo = Array(landmarks.size) { Array(nodes) { Int.MAX_VALUE } }
         for(l in landmarks.indices) {
             println("Finding distances for landmark ${landmarks[l]}.")
-            val res = d.dijkstra(nodes, d.reverse(edges), landmarks[l])
+            val res = reverse.dijkstra(landmarks[l])
             resultTo[l] = res.map { it?.second ?: -1 }.toTypedArray()
         }
 
@@ -62,5 +63,9 @@ class Preprocessor {
         }
 
         writer.close()
+    }
+
+    private fun reverse(e: List<Array<Int>>): List<Array<Int>> {
+        return e.map { arrayOf(it[1], it[0], it[2]) }
     }
 }

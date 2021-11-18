@@ -21,20 +21,22 @@ class FileReader {
         }
     }
 
-    fun readPrepData(preprocessedPath: String): Array<Array<Array<Int>>>{
+    fun readPrepData(preprocessedPath: String): Pair<Array<Array<Int>>, Array<Array<Int>>>{
         val reader = DataInputStream(FileInputStream(File(preprocessedPath)))
         val nodes = reader.readInt()
         val landmarks = reader.readInt()
 
-        val result = Array(2) { Array(landmarks) { Array(nodes) { -1 } } }
-        for(r in result.indices) {
+        val lmFrom = Array(landmarks) { Array(nodes) { Int.MAX_VALUE } }
+        val lmTo = Array(landmarks) { Array(nodes) { Int.MAX_VALUE } }
+
+        for(lm in listOf(lmFrom, lmTo)) {
             for(l in 0 until landmarks) {
                 for(n in 0 until nodes) {
-                    result[r][l][n] = reader.readInt()
+                    lm[l][n] = reader.readInt()
                 }
             }
         }
 
-        return result
+        return Pair(lmFrom, lmTo)
     }
 }
