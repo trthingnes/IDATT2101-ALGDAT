@@ -46,7 +46,7 @@ class Dijkstra {
 
         val result = arrayListOf<Pair<Int, Int>?>()
         nodes.forEach {
-            if(it.previous == null) result.add(null)
+            if(it.previous == null) result.add(Pair(it.number, it.cost))
             else result.add(Pair(it.previous!!.number, it.cost))
         }
 

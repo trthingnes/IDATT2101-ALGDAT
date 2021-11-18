@@ -41,6 +41,8 @@ class Preprocessor {
         The second index is the node.
          */
 
+        println("Writing file.")
+
         // Write results to file
         val writer = DataOutputStream(FileOutputStream(File(outputPath)))
 

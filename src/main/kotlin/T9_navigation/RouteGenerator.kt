@@ -17,10 +17,11 @@ fun main() {
         start,
         end
     )
-    println(result.last().second.toFloat()/(100*60*60))
+    //val result = Dijkstra().dijkstra(f.readNodeCount("noder_i.txt"), f.readEdges("kanter_i.txt"), start)
+    RouteGenerator(start, result, "noder_i.txt", "interessepkt_i.txt").coordTo(end).forEach { println(it) }
 }
 
-class RouteGenerator(val start: Int, val result: Array<Pair<Int, Int>>, nodesPath: String, namesPath: String) {
+class RouteGenerator(val start: Int, val result: Array<Pair<Int, Int>?>, nodesPath: String, namesPath: String) {
     private val coords = File(nodesPath).readLines()
     private val names = File(namesPath).readLines()
 
@@ -30,12 +31,19 @@ class RouteGenerator(val start: Int, val result: Array<Pair<Int, Int>>, nodesPat
     fun coordTo(end: Int): List<String> {
         val route = arrayListOf<String>()
 
-        result.forEach {
-            val coord = getCoords(it.first)
-            route.add("${coord.first},${coord.second}")
+        var current = end
+
+        // While we have not found the start node.
+        while(result[current] != null && result[current]!!.first != current) {
+            val coords = getCoords(current)
+            route.add("${coords.first},${coords.second}")
+            current = result[current]!!.first
         }
 
-        return route
+        val coords = getCoords(start)
+        route.add("${coords.first},${coords.second}")
+
+        return route.reversed()
     }
 
     /**
@@ -61,7 +69,7 @@ class RouteGenerator(val start: Int, val result: Array<Pair<Int, Int>>, nodesPat
      * @return Pair of lat/long [Double].
      */
     private fun getCoords(node: Int): Pair<Double, Double> {
-        val line = coords[node + 1]
+        val line = coords.first { it.startsWith(node.toString()) }
         val st = StringTokenizer(line)
 
         st.nextToken() // Skip node number token.
