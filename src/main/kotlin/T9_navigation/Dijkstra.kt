@@ -18,7 +18,7 @@ class Dijkstra(val nodes: List<Node>) {
      * @param start The number of the node to start the search from.
      * @return An array of size n with node number as index representing the path on form {(prevNode, cost),...}.
      */
-    fun dijkstra(start: Int): Pair<Array<Pair<Int, Int>?>, Int> {
+    fun dijkstra(start: Int, end: Int? = null): Pair<Array<Pair<Int, Int>?>, Int> {
         nodes[start].previous = nodes[start]
         nodes[start].distanceFromStart = 0
 
@@ -29,6 +29,9 @@ class Dijkstra(val nodes: List<Node>) {
         // While there are undiscovered nodes.
         while(queue.isNotEmpty()) {
             val node = queue.poll()
+
+            // Stop the algorithm if the end of the route has been picked out of the queue.
+            if(end != null && node.number == end) break
 
             //For every neighbour node that is not visited.
             node.neighbours.forEach {
@@ -59,8 +62,13 @@ class Dijkstra(val nodes: List<Node>) {
         return Pair(paths.toTypedArray(), nodes.filter { it.visited }.size)
     }
 
-    fun dijkstra(start: Int, type: LocationType, amount: Int): Array<Pair<Int, LocationType>> {
-        val result = arrayListOf<Pair<Int, LocationType>>()
+    /**
+     * Runs Dijkstra's algorithm on the given graph to find the closest amenities.
+     * @param start The number of the node to start the search from.
+     * @return An array of size amount with [Pair] of node numbers and location types.
+     */
+    fun dijkstra(start: Int, type: LocationType, amount: Int): Array<Pair<Int, Int>> {
+        val result = arrayListOf<Pair<Int, Int>>()
 
         nodes[start].previous = nodes[start]
         nodes[start].distanceFromStart = 0
@@ -74,7 +82,8 @@ class Dijkstra(val nodes: List<Node>) {
 
             //Add node to result if correct type
             if (node.type == type) {
-                result.add(Pair(node.number, node.type))
+                val pair = Pair(node.number, node.distanceFromStart)
+                result.add(pair)
                 if (result.size >= amount) break
             }
 

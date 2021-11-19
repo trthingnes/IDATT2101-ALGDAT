@@ -6,7 +6,7 @@ class Node(
     val number: Int,
     val lat: Double,
     val long: Double,
-    val neighbours: ArrayList<Pair<Node, Int>> = arrayListOf(), // Pair(node, cost)
+    val neighbours: ArrayList<Pair<Node, Int>> = arrayListOf(),
     var type: LocationType = LocationType.UNKNOWN,
     var visited: Boolean = false,
     var previous: Node? = null,

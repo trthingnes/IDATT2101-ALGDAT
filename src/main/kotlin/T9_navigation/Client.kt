@@ -1,6 +1,7 @@
 package T9_navigation
 
 import java.util.*
+import kotlin.system.measureTimeMillis
 
 private const val NODES_FILE = "noder_i.txt"
 private const val EDGES_FILE = "kanter_i.txt"
@@ -20,11 +21,10 @@ class Client() {
         printWelcomeMsg()
 
         while(true) {
-            printMenu()
             when(getOptionFromUser()) {
                 MenuOption.FIND_CLOSEST -> {
                     println("")
-                    println("find closest")
+                    getClosestResults().forEach { println(it) }
                     println("")
                 }
 
@@ -36,7 +36,7 @@ class Client() {
 
                 MenuOption.ALT -> {
                     println("")
-                    getALTResults().forEach { println(it) }
+                    getAltResults().forEach { println(it) }
                     println("")
                 }
 
@@ -70,18 +70,16 @@ class Client() {
     }
 
     private fun printWelcomeMsg() {
-        println("Welcome to the Nordic Mapper")
+        println("Welcome to the Mapper")
         println("We loaded ${nodes.size} nodes and ${nodes.sumOf { it.neighbours.size }} edges.")
         println()
     }
 
-    private fun printMenu() {
+    private fun getOptionFromUser(): MenuOption? {
+        println("Available menu options:")
         MenuOption.values().forEach {
             println("${it.ordinal + 1}. ${it.description}")
         }
-    }
-
-    private fun getOptionFromUser(): MenuOption? {
         print("Please select an option: ")
         val option = scanner.nextInt()
         return MenuOption.values().firstOrNull { it.ordinal == (option - 1) }
@@ -97,16 +95,59 @@ class Client() {
         return scanner.nextInt()
     }
 
+    private fun getLocationTypeFromUser(): LocationType {
+        println("Available location types:")
+        LocationType.values().forEach {
+            println("${it.ordinal + 1}. ${it.description}")
+        }
+        print("Please select a location type: ")
+        val number = scanner.nextInt()
+        return LocationType.values().firstOrNull { it.ordinal == (number - 1) } ?: LocationType.UNKNOWN
+    }
+
+    private fun getAmountFromUser(): Int {
+        print("Enter number of amenities you want to look for: ")
+        return scanner.nextInt()
+    }
+
+    private fun getClosestResults() : List<String> {
+        val d = Dijkstra(nodes)
+        val start = getStartNodeFromUser()
+        val locationType = getLocationTypeFromUser()
+        val amount = getAmountFromUser()
+
+        val result = arrayListOf("")
+        val raw = d.dijkstra(start, locationType, amount)
+
+        result.add("Result of amenities search near $start:")
+        raw.forEach {
+            result.add("${locationType.description} (#${it.first}) is ${getTimeStringFrom(it.second/100)} away.")
+        }
+
+        result.add("")
+        result.add("Coordinates to locations:")
+        raw.forEach {
+            val node = nodes[it.first]
+            result.add(node.coords)
+        }
+
+        return result
+    }
+
     private fun getDijkstraResults(): List<String> {
         val d = Dijkstra(nodes)
         val start = getStartNodeFromUser()
         val end = getEndNodeFromUser()
-        val result = arrayListOf<String>()
-        val raw = d.dijkstra(start)
+        val result = arrayListOf("")
+        var raw: Pair<Array<Pair<Int, Int>?>, Int>
 
-        result.add("")
+        val time = measureTimeMillis {
+            raw = d.dijkstra(start, end)
+        }
+
         result.add("Result of Dijkstra's algorithm between $start and $end:")
         result.add("Total cost: ${getTotalCost(raw.first, end)} - Total nodes visited: ${raw.second}")
+        result.add("Total runtime was ${time/1000} seconds.")
         result.add("")
         result.add("100 coordinates in the route:")
         result.addAll(getCoordinatePathTo(raw.first, end))
@@ -114,15 +155,21 @@ class Client() {
         return result
     }
 
-    private fun getALTResults(): List<String> {
+    private fun getAltResults(): List<String> {
         val a = AStar(nodes, prep)
         val start = getStartNodeFromUser()
         val end = getEndNodeFromUser()
-        val result = arrayListOf<String>()
-        val raw = a.alt(start, end)
+        val result = arrayListOf("")
+        var raw: Pair<Array<Pair<Int, Int>?>, Int>
+        val time = measureTimeMillis {
+            raw = a.alt(start, end)
+        }
 
         result.add("Result of ALT algorithm between $start and $end:")
         result.add("Total cost: ${getTotalCost(raw.first, end)} - Total nodes visited: ${raw.second}")
+        result.add("Total runtime is ${time/1000} seconds")
+        result.add("")
+        result.add("100 coordinates in the route:")
         result.addAll(getCoordinatePathTo(raw.first, end))
 
         return result
@@ -159,9 +206,13 @@ class Client() {
     private fun getTotalCost(result: Array<Pair<Int, Int>?>, end: Int): String {
         val seconds = (result[end]?.second ?: 0) / 100.0
 
-        val h = (seconds / 3600).toInt()
-        val m = ((seconds % 3600) / 60).toInt()
-        val s = ((seconds % 3600) % 60).toInt()
+        return getTimeStringFrom(seconds.toInt())
+    }
+
+    private fun getTimeStringFrom(seconds: Int): String {
+        val h = (seconds / 3600)
+        val m = ((seconds % 3600) / 60)
+        val s = ((seconds % 3600) % 60)
 
         return "$h:$m:$s"
     }
@@ -176,8 +227,8 @@ class Client() {
     }
 
     enum class MenuOption(val description: String) {
-        FIND_CLOSEST("Find closest amenities"),
-        DIJKSTRA("Run Dijkstra's algorithm and print result to console"),
-        ALT("Run ALT algorithm and print result to console")
+        FIND_CLOSEST("Find closest amenities and print result to console."),
+        DIJKSTRA("Run Dijkstra's algorithm and print result to console."),
+        ALT("Run ALT algorithm and print result to console.")
     }
 }

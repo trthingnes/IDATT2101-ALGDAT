@@ -10,7 +10,7 @@ class AStar(val nodes: List<Node>, landmarksData: Pair<Array<Array<Int>>, Array<
      * Runs the ALT (A*, Landmarks, Triangular eq.) algorithm on the given graph.
      * @param start The number of the node to start the search from.
      * @param end The number of the node to end the search in. If omitted, finds all nodes.
-     * @return An array representing the route taken on form {(firstNode, cost), (secondNode, cost),...}
+     * @return An array of size n with node number as index representing the path on form {(prevNode, cost),...}.
      */
     fun alt(start: Int, end: Int): Pair<Array<Pair<Int, Int>?>, Int> {
         // Add all edges to their origin node.
@@ -26,7 +26,7 @@ class AStar(val nodes: List<Node>, landmarksData: Pair<Array<Array<Int>>, Array<
         while(queue.isNotEmpty()) {
             val node = queue.poll()
 
-            // ! Stop the algorithm if the end of the route has been picked out of the queue.
+            // Stop the algorithm if the end of the route has been picked out of the queue.
             if(node.number == end) break
 
             //For every neighbour node that is not visited.

@@ -19,10 +19,11 @@ class FileReader {
             val line = StringTokenizer(typeReader.readLine())
             if(line.countTokens() < 3) continue // Skip lines with too few tokens.
 
-            val number = line.nextToken().toInt()
-            val type = LocationType.values().firstOrNull { it.code == number } ?: continue
+            val nodeNumber = line.nextToken().toInt()
+            val typeNumber = line.nextToken().toInt()
 
-            val node = nodes.firstOrNull { it.number == number } ?: continue
+            val type = LocationType.values().firstOrNull { it.code == typeNumber } ?: continue
+            val node = nodes.firstOrNull { it.number == nodeNumber } ?: continue
             node.type = type
         }
 
