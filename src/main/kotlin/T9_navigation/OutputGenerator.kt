@@ -2,31 +2,32 @@ package T9_navigation
 
 import java.io.File
 import java.util.*
+import kotlin.system.measureTimeMillis
 
 fun main() {
     val f = FileReader()
 
     println("Reading node count.")
-    val nodes = f.readNodeCount("noder.txt")
+    val nodes = f.readNodes("noder.txt", "interessepkt.txt")
 
     println("Reading edges.")
     val edges = f.readEdges("kanter.txt")
 
     println("Reading prep data.")
-    val a = AStar(nodes, edges, f.readPrepData("prep.txt"))
-    val d = Dijkstra(nodes, edges)
-
-    //val start = 13971 // Reykjanesbær
-    //val end = 62663
+    val a = AStar(nodes, f.readPrepData("prep.txt"))
+    val d = Dijkstra(nodes)
 
     val start = 6861306 // Trondheim
     val end = 2518118 // Oslo
 
     println("Starting algorithm.")
-    val result = a.alt(start, end)
-    //val result = d.dijkstra(start)
+    val result: Pair<Array<Pair<Int, Int>?>, Int>
+    val time = measureTimeMillis {
+        result = a.alt(start, end)
+        //val result = d.dijkstra(start)
+    }
 
-    val output = OutputGenerator(start, result, "noder.txt", "interessepkt.txt")
+    val output = OutputGenerator(start, result.first, "noder.txt", "interessepkt.txt")
 
     // Print total cost to end point.
     println("Mapped route from $start to $end and got cost ${output.costTo(end)}.")

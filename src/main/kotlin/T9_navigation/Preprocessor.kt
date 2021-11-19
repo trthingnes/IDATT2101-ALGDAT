@@ -4,34 +4,34 @@ import java.io.*
 
 fun main() {
     val p = Preprocessor()
-    //p.preprocess(arrayOf(2151254, 2890591, 5116554), "noder.txt", "kanter.txt", "prep.txt")
-    p.preprocess(arrayOf(30979, 37890, 90946), "noder_i.txt", "kanter_i.txt", "prep_i.txt")
+    p.preprocess(arrayOf(2151254, 2890591, 5116554), "noder.txt", "interessepkt.txgt", "kanter.txt", "prep.txt")
+    //p.preprocess(arrayOf(30979, 37890, 90946), "noder_i.txt", "kanter_i.txt", "prep_i.txt")
 }
 
 class Preprocessor {
-    fun preprocess(landmarks: Array<Int>, nodesPath: String, edgesPath: String, outputPath: String) {
+    fun preprocess(landmarks: Array<Int>, nodesPath: String, infoPath: String, edgesPath: String, outputPath: String) {
         val f = FileReader()
-        val nodes = f.readNodeCount(nodesPath)
+        val nodes = f.readNodes(nodesPath, infoPath)
         val edges = f.readEdges(edgesPath)
-        val normal = Dijkstra(nodes, edges)
+        val normal = Dijkstra(nodes)
         val reverse = Dijkstra(nodes, reverse(edges))
 
         // Calculate all distances from landmarks
         println("Finding all distances from landmarks.")
-        val resultFrom = Array(landmarks.size) { Array(nodes) { Int.MAX_VALUE } }
+        val resultFrom = Array(landmarks.size) { Array(nodes.size) { Int.MAX_VALUE } }
         for(l in landmarks.indices) {
             println("Finding distances for landmark ${landmarks[l]}.")
             val res = normal.dijkstra(landmarks[l])
-            resultFrom[l] = res.map { it?.second ?: -1 }.toTypedArray()
+            resultFrom[l] = res.first.map { it?.second ?: -1 }.toTypedArray()
         }
 
         // Calculate all distances to landmarks
         println("Finding all distances to landmarks.")
-        val resultTo = Array(landmarks.size) { Array(nodes) { Int.MAX_VALUE } }
+        val resultTo = Array(landmarks.size) { Array(nodes.size) { Int.MAX_VALUE } }
         for(l in landmarks.indices) {
             println("Finding distances for landmark ${landmarks[l]}.")
             val res = reverse.dijkstra(landmarks[l])
-            resultTo[l] = res.map { it?.second ?: -1 }.toTypedArray()
+            resultTo[l] = res.first.map { it?.second ?: -1 }.toTypedArray()
         }
 
         /*
@@ -48,7 +48,7 @@ class Preprocessor {
         val writer = DataOutputStream(BufferedOutputStream(FileOutputStream(File(outputPath))))
 
         // Write the first two numbers as info to the decoder.
-        writer.writeInt(nodes)
+        writer.writeInt(nodes.size)
         writer.writeInt(landmarks.size)
 
         // For both results

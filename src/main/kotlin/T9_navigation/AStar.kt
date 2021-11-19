@@ -2,7 +2,7 @@ package T9_navigation
 
 import java.util.*
 
-class AStar(val n: Int, val edges: List<Array<Int>>, landmarksData: Pair<Array<Array<Int>>, Array<Array<Int>>>) {
+class AStar(val nodes: List<Node>, landmarksData: Pair<Array<Array<Int>>, Array<Array<Int>>>) {
     private val distFromLandmarks = landmarksData.first
     private val distToLandmarks = landmarksData.second
 
@@ -12,22 +12,14 @@ class AStar(val n: Int, val edges: List<Array<Int>>, landmarksData: Pair<Array<A
      * @param end The number of the node to end the search in. If omitted, finds all nodes.
      * @return An array representing the route taken on form {(firstNode, cost), (secondNode, cost),...}
      */
-    fun alt(start: Int, end: Int): Array<Pair<Int, Int>?> {
-        val nodes = Array(n) { Node(it) }
-
+    fun alt(start: Int, end: Int): Pair<Array<Pair<Int, Int>?>, Int> {
         // Add all edges to their origin node.
-        edges.forEach {
-            val from = it[0]
-            val to = it[1]
-            val cost = it[2]
-            nodes[from].neighbours.add(Pair(nodes[to], cost))
-        }
 
         nodes[start].previous = nodes[start]
         nodes[start].distanceFromStart = 0
         nodes[start].distanceFromEnd = calculateDistance(distFromLandmarks, distToLandmarks, start, end)
 
-        val queue = PriorityQueue<Node>() { a, b -> a.priority - b.priority }
+        val queue = PriorityQueue<Node> { a, b -> a.priority - b.priority }
         queue.add(nodes[start])
 
         // While there are undiscovered nodes.
@@ -65,7 +57,8 @@ class AStar(val n: Int, val edges: List<Array<Int>>, landmarksData: Pair<Array<A
             if (previous != null) paths.add(Pair(previous.number, distance))
             else paths.add(null)
         }
-        return paths.toTypedArray()
+
+        return Pair(paths.toTypedArray(), nodes.filter { it.visited }.size)
     }
 
     /**
@@ -74,7 +67,7 @@ class AStar(val n: Int, val edges: List<Array<Int>>, landmarksData: Pair<Array<A
      * @param distToLM Distances from all nodes to all landmarks.
      * @param start The node to measure distance from.
      * @param end The node to measure distance to.
-     * @return A positive integer representing the distance from node to end.
+     * @return A positive integer representing the distance from start to end.
      */
     private fun calculateDistance(distFromLM: Array<Array<Int>>, distToLM: Array<Array<Int>>, start: Int, end: Int): Int {
         var highest = 0
@@ -88,20 +81,5 @@ class AStar(val n: Int, val edges: List<Array<Int>>, landmarksData: Pair<Array<A
         }
 
         return highest
-    }
-
-    class Node(
-        val number: Int,
-        val neighbours: ArrayList<Pair<Node, Int>> = arrayListOf(), // Pair(node, cost)
-        var visited: Boolean = false,
-        var previous: Node? = null,
-        var distanceFromStart: Int = Int.MAX_VALUE,
-        var distanceFromEnd: Int = Int.MAX_VALUE
-    ) {
-        val priority get() = if(distanceFromEnd.toLong() + distanceFromStart.toLong() > Int.MAX_VALUE) {
-            Int.MAX_VALUE
-        } else {
-            distanceFromEnd + distanceFromStart
-        }
     }
 }

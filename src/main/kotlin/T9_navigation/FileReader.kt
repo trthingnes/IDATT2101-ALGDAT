@@ -1,14 +1,32 @@
 package T9_navigation
 
-import java.io.BufferedInputStream
-import java.io.DataInputStream
-import java.io.File
-import java.io.FileInputStream
+import java.io.*
 import java.util.*
 
 class FileReader {
-    fun readNodeCount(nodesPath: String): Int {
-        return StringTokenizer(File(nodesPath).readLines().first()).nextToken().toInt()
+    fun readNodes(nodesPath: String, infoPath: String): List<Node> {
+        val nodes = arrayListOf<Node>()
+
+        val nodeReader = BufferedReader(File(nodesPath).reader())
+        while(nodeReader.ready()) {
+            val line = StringTokenizer(nodeReader.readLine())
+            if(line.countTokens() < 3) continue // Skip lines with too few tokens.
+            nodes.add(Node(number=line.nextToken().toInt(), lat=line.nextToken().toDouble(), long=line.nextToken().toDouble()))
+        }
+
+        val typeReader = BufferedReader(File(infoPath).reader())
+        while(typeReader.ready()) {
+            val line = StringTokenizer(typeReader.readLine())
+            if(line.countTokens() < 3) continue // Skip lines with too few tokens.
+
+            val number = line.nextToken().toInt()
+            val type = LocationType.values().firstOrNull { it.code == number } ?: continue
+
+            val node = nodes.firstOrNull { it.number == number } ?: continue
+            node.type = type
+        }
+
+        return nodes
     }
 
     fun readEdges(edgesPath: String): List<Array<Int>> {
